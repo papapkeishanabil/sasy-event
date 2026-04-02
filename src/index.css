@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: theme('colors.sasie-dove');
+  }
+  body {
+    @apply bg-sasie-cream text-sasie-mocca;
+    font-family: 'Work Sans', sans-serif;
+  }
+  /* FORCE WORK SANS FONT EVERYWHERE */
+  *,
+  *::before,
+  *::after {
+    font-family: 'Work Sans', sans-serif !important;
+  }
+}
+
+@layer components {
+  /* Clean card style - SASIENALA minimalist */
+  .sasie-card {
+    @apply bg-white border border-sasie-dove rounded-2xl shadow-sm;
+  }
+
+  .sasie-card-hover {
+    @apply sasie-card hover:shadow-md hover:border-sasie-mocca transition-all duration-200;
+  }
+
+  /* Primary button - SASIENALA style */
+  .btn-primary {
+    @apply bg-sasie-mocca text-white font-medium py-3 px-6 rounded-xl
+           hover:bg-sasie-brown-dark
+           active:scale-[0.98]
+           transition-all duration-200;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply bg-white border-2 border-sasie-mocca text-sasie-mocca font-medium py-3 px-6 rounded-xl
+           hover:bg-sasie-mocca hover:text-white
+           active:scale-[0.98]
+           transition-all duration-200;
+  }
+
+  /* Input field - Clean, SASIENALA style */
+  .input-field {
+    @apply bg-white border-2 border-sasie-dove rounded-xl px-4 py-3
+           text-sasie-mocca placeholder-sasie-milo/60
+           focus:outline-none focus:border-sasie-gold
+           transition-all duration-200;
+  }
+
+  /* Guest card */
+  .guest-card {
+    @apply sasie-card-hover p-4 cursor-pointer;
+  }
+
+  .guest-card.checked-in {
+    @apply border-sasie-emerald bg-sasie-sage/10;
+  }
+
+  .guest-card.vip {
+    @apply border-sasie-gold bg-sasie-gold-light/20;
+  }
+
+  /* Category badges - Refined colors */
+  .badge-vip {
+    @apply bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40;
+  }
+
+  .badge-regular {
+    @apply bg-sasie-dove text-sasie-milo;
+  }
+
+  .badge-media {
+    @apply bg-sasie-sage/30 text-sasie-emerald border border-sasie-emerald/30;
+  }
+
+  .badge-speaker {
+    @apply bg-sasie-terracotta/20 text-sasie-marun border border-sasie-terracotta/40;
+  }
+
+  /* Gold text for luxury accent */
+  .gold-text {
+    color: #C9A86C;
+  }
+
+  /* Gold gradient background */
+  .gold-gradient {
+    background: linear-gradient(135deg, #C9A86C 0%, #E5D4A8 100%);
+  }
+
+  /* Glass card effect - SASIENALA refined */
+  .glass-card {
+    @apply bg-white/70 border border-sasie-dove rounded-xl backdrop-blur-sm;
+  }
+
+  /* Cremona font */
+  .font-cremona {
+    font-family: 'Cremona', serif;
+  }
+
+  /* Gold filter for black logos - converts black to gold (#C9A86C) */
+  .logo-gold {
+    filter: invert(1) sepia(100%) saturate(150%) hue-rotate(325deg) brightness(0.85);
+  }
+
+  /* Pulse glow animation for gold elements */
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(201, 168, 108, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(201, 168, 108, 0);
+    }
+  }
+
+  /* Premium shimmer animation for progress bars */
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Gradient animation for buttons */
+  .animate-gradient {
+    animation: gradient 3s ease infinite;
+  }
+
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* Shine animation for progress bar */
+  .animate-shine {
+    animation: shine 2s ease-in-out infinite;
+  }
+
+  @keyframes shine {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(200%);
+    }
+  }
+}
+
+/* Clean scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #8B7355;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6B5A45;
+}
+
+/* Page transition */
+.page-transition {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
