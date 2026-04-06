@@ -39,6 +39,23 @@ export default {
         'sasie-gray-light': '#FAFAFA',
         // Accent color for CTAs
         'sasie-accent': '#8B7355',
+
+        // COLOR OF US Theme - Invitation Inspired
+        'blush-pink': '#F8E8E8',
+        'blush-pink-light': '#FCF0F0',
+        'blush-pink-dark': '#E8D0D0',
+        'sage-green': '#8B9A7D',
+        'sage-green-light': '#A8B8A5',
+        'sage-green-dark': '#6B7A5F',
+        'mahogany-brown': '#8B4513',
+        'mahogany-light': '#A0522D',
+        'mahogany-dark': '#5C2E0A',
+        'champagne-gold': '#D4AF37',
+        'champagne-gold-light': '#E5C758',
+        'champagne-gold-dark': '#B8941F',
+        'dusty-rose': '#D4A5A5',
+        'cream-ivory': '#FFFEF9',
+        'warm-sage': '#9CAF94',
       },
       fontFamily: {
         'worksans': ['"Work Sans"', 'sans-serif'],

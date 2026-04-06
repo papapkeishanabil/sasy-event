@@ -4,11 +4,13 @@
 
 @layer base {
   * {
-    border-color: theme('colors.sasie-dove');
+    border-color: theme('colors.blush-pink-dark');
   }
   body {
-    @apply bg-sasie-cream text-sasie-mocca;
+    @apply text-mahogany-brown;
     font-family: 'Work Sans', sans-serif;
+    background: linear-gradient(135deg, #F8E8E8 0%, #FCF0F0 50%, #FFFEF9 100%);
+    min-height: 100vh;
   }
   /* FORCE WORK SANS FONT EVERYWHERE */
   *,
@@ -19,36 +21,36 @@
 }
 
 @layer components {
-  /* Clean card style - SASIENALA minimalist */
+  /* Clean card style - Color Of Us theme */
   .sasie-card {
-    @apply bg-white border border-sasie-dove rounded-2xl shadow-sm;
+    @apply bg-cream-ivory border border-blush-pink-dark/30 rounded-2xl shadow-sm;
   }
 
   .sasie-card-hover {
-    @apply sasie-card hover:shadow-md hover:border-sasie-mocca transition-all duration-200;
+    @apply sasie-card hover:shadow-md hover:border-sage-green/40 transition-all duration-200;
   }
 
-  /* Primary button - SASIENALA style */
+  /* Primary button - Color Of Us theme */
   .btn-primary {
-    @apply bg-sasie-mocca text-white font-medium py-3 px-6 rounded-xl
-           hover:bg-sasie-brown-dark
+    @apply bg-mahogany-brown text-white font-medium py-3 px-6 rounded-xl
+           hover:bg-mahogany-dark
            active:scale-[0.98]
            transition-all duration-200;
   }
 
   /* Secondary button */
   .btn-secondary {
-    @apply bg-white border-2 border-sasie-mocca text-sasie-mocca font-medium py-3 px-6 rounded-xl
-           hover:bg-sasie-mocca hover:text-white
+    @apply bg-white border-2 border-mahogany-brown text-mahogany-brown font-medium py-3 px-6 rounded-xl
+           hover:bg-mahogany-brown hover:text-white
            active:scale-[0.98]
            transition-all duration-200;
   }
 
-  /* Input field - Clean, SASIENALA style */
+  /* Input field - Color Of Us theme */
   .input-field {
-    @apply bg-white border-2 border-sasie-dove rounded-xl px-4 py-3
-           text-sasie-mocca placeholder-sasie-milo/60
-           focus:outline-none focus:border-sasie-gold
+    @apply bg-white border-2 border-blush-pink-dark/30 rounded-xl px-4 py-3
+           text-mahogany-brown placeholder-sage-green/50
+           focus:outline-none focus:border-sage-green
            transition-all duration-200;
   }
 
@@ -58,43 +60,43 @@
   }
 
   .guest-card.checked-in {
-    @apply border-sasie-emerald bg-sasie-sage/10;
+    @apply border-sage-green bg-sage-green/15;
   }
 
   .guest-card.vip {
-    @apply border-sasie-gold bg-sasie-gold-light/20;
+    @apply border-champagne-gold bg-champagne-gold-light/30;
   }
 
-  /* Category badges - Refined colors */
+  /* Category badges - Color Of Us theme */
   .badge-vip {
-    @apply bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40;
+    @apply bg-champagne-gold/20 text-mahogany-brown border border-champagne-gold/40;
   }
 
   .badge-regular {
-    @apply bg-sasie-dove text-sasie-milo;
+    @apply bg-blush-pink text-mahogany-brown/70;
   }
 
   .badge-media {
-    @apply bg-sasie-sage/30 text-sasie-emerald border border-sasie-emerald/30;
+    @apply bg-sage-green/20 text-sage-green-dark border border-sage-green/30;
   }
 
   .badge-speaker {
-    @apply bg-sasie-terracotta/20 text-sasie-marun border border-sasie-terracotta/40;
+    @apply bg-dusty-rose/20 text-mahogany-brown border border-dusty-rose/40;
   }
 
   /* Gold text for luxury accent */
   .gold-text {
-    color: #C9A86C;
+    color: #D4AF37;
   }
 
   /* Gold gradient background */
   .gold-gradient {
-    background: linear-gradient(135deg, #C9A86C 0%, #E5D4A8 100%);
+    background: linear-gradient(135deg, #D4AF37 0%, #E5C758 100%);
   }
 
-  /* Glass card effect - SASIENALA refined */
+  /* Glass card effect - Color Of Us theme */
   .glass-card {
-    @apply bg-white/70 border border-sasie-dove rounded-xl backdrop-blur-sm;
+    @apply bg-cream-ivory/80 border border-blush-pink-dark/20 rounded-xl backdrop-blur-sm;
   }
 
   /* Cremona font */
@@ -219,22 +221,22 @@
   }
 }
 
-/* Clean scrollbar */
+/* Clean scrollbar - Color Of Us theme */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #F5F5F5;
+  background-color: #F8E8E8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #8B7355;
+  background-color: #8B9A7D;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #6B5A45;
+  background-color: #6B7A5F;
 }
 
 /* Page transition */
