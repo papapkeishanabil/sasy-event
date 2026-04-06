@@ -299,7 +299,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                         {prefix}
                       </p>
                     )}
-                    <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                    <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold leading-tight" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
                       Color Of Us
                     </p>
                   </div>
@@ -444,7 +444,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                         {prefix}
                       </h1>
                     )}
-                    <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                    <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-champagne-gold leading-tight" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
                       Color Of Us
                     </p>
                   </div>
