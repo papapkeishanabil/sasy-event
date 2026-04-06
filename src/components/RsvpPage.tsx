@@ -394,82 +394,83 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </div>
         </header>
 
-        {/* Event Details - Modern Card Layout */}
-        <section className="mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          {/* Header with decorative element */}
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-sasie-gold/50 to-transparent"></div>
-            <span className="text-2xl">📅</span>
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-sasie-gold/50 to-transparent"></div>
+        {/* Event Details - Modern & Elegant */}
+        <section className="mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          {/* Section Title */}
+          <div className="text-center mb-6">
+            <p className="text-xs text-sasie-gold/80 uppercase tracking-[0.3em] mb-2">Event Details</p>
+            <div className="w-16 h-px bg-gradient-to-r from-transparent via-sasie-gold to-transparent mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Date Card */}
-            <div className="bg-white rounded-2xl p-4 shadow-md border-2 border-sasie-gold/20 hover:border-sasie-gold hover:shadow-lg transition-all">
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-sasie-gold to-sasie-bronze flex items-center justify-center shadow-lg">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-1">Date</p>
-                <p className="text-sm font-bold text-sasie-mocca leading-tight">{event.date}</p>
-              </div>
-            </div>
+          {/* Main Container with Glass Effect */}
+          <div className="relative bg-white/40 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-xl border border-white/50">
+            {/* Decorative Corner Elements */}
+            <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-sasie-gold/20 to-transparent rounded-tl-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-sasie-bronze/20 to-transparent rounded-br-3xl"></div>
 
-            {/* Time Card */}
-            <div className="bg-white rounded-2xl p-4 shadow-md border-2 border-sasie-milo/20 hover:border-sasie-milo hover:shadow-lg transition-all">
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-sasie-milo to-sasie-mocca flex items-center justify-center shadow-lg">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+            <div className="relative z-10 space-y-6">
+              {/* Date Row */}
+              <div className="group">
+                <div className="flex items-baseline gap-3 sm:gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sasie-gold to-sasie-bronze flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-sasie-milo/50 uppercase tracking-widest mb-1">When</p>
+                    <p className="text-lg sm:text-xl font-light text-sasie-mocca">{event.date}</p>
+                  </div>
                 </div>
-                <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-1">Time</p>
-                <p className="text-sm font-bold text-sasie-mocca leading-tight">{event.time}</p>
               </div>
-            </div>
 
-            {/* Location Card */}
-            <div className="bg-white rounded-2xl p-4 shadow-md border-2 border-sasie-marun/20 hover:border-sasie-marun hover:shadow-lg transition-all">
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-sasie-marun to-rose-700 flex items-center justify-center shadow-lg">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-1">Location</p>
-                <p className="text-sm font-bold text-sasie-mocca leading-tight">{event.location}</p>
-              </div>
-            </div>
-          </div>
+              {/* Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-sasie-gold/30 to-transparent"></div>
 
-          {/* Location Details - Full Width */}
-          <div className="mt-3 bg-gradient-to-r from-sasie-cream to-white rounded-2xl p-4 shadow-md border border-sasie-gold/20">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-1">
-                <div className="w-10 h-10 rounded-xl bg-sasie-gold/20 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+              {/* Time Row */}
+              <div className="group">
+                <div className="flex items-baseline gap-3 sm:gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sasie-milo/80 to-sasie-mocca flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <p className="text-xs text-sasie-milo/50 uppercase tracking-widest mb-1">Time</p>
+                    <p className="text-lg sm:text-xl font-light text-sasie-mocca">{event.time}</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-sasie-milo/70 mb-1">{event.locationAddress}</p>
-                <button
-                  onClick={openGoogleMaps}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-sasie-gold to-sasie-bronze text-white px-4 py-2 rounded-xl font-medium text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  <span>Open in Google Maps</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+
+              {/* Divider */}
+              <div className="h-px bg-gradient-to-r from-transparent via-sasie-gold/30 to-transparent"></div>
+
+              {/* Location Row */}
+              <div className="group">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sasie-marun to-rose-700 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-sasie-milo/50 uppercase tracking-widest mb-1">Where</p>
+                    <p className="text-lg sm:text-xl font-light text-sasie-mocca mb-1">{event.location}</p>
+                    {event.locationAddress && (
+                      <p className="text-sm text-sasie-milo/60 font-light mb-3">{event.locationAddress}</p>
+                    )}
+                    <button
+                      onClick={openGoogleMaps}
+                      className="group/btn inline-flex items-center gap-2 text-sasie-gold hover:text-sasie-bronze transition-colors duration-300"
+                    >
+                      <span className="text-xs font-medium uppercase tracking-wider border-b border-sasie-gold/30 group-hover/btn:border-sasie-gold pb-0.5">View on Map</span>
+                      <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
