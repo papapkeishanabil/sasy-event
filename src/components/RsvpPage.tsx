@@ -273,23 +273,21 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 <div className="h-px w-8 sm:w-12 bg-champagne-gold/50"></div>
               </div>
             )}
-            {/* Show event title */}
+            {/* Show event title - simplified */}
             {(() => {
               const title = event.title;
-              const hasColorOfUs = title.toLowerCase().includes('color of us') ||
-                                   title.toLowerCase().includes('color') ||
-                                   title.includes('COLOR');
+              const hasColorOfUs = /color\s*of\s*us/i.test(title);
 
               if (hasColorOfUs) {
-                // Extract the part before "Color Of Us"
+                // Extract prefix (part before "Color Of Us")
                 let prefix = '';
-                if (title.includes('-')) {
-                  prefix = title.split('-')[1]?.trim() || '';
-                } else if (title.includes(':')) {
-                  prefix = title.split(':')[1]?.trim() || '';
-                } else if (title.toLowerCase().includes('color of us')) {
-                  const parts = title.split(/color of us/i);
-                  prefix = parts[1]?.trim() || parts[0]?.trim().replace(/color/i, '').trim() || '';
+                const colonIndex = title.indexOf(':');
+                const dashIndex = title.indexOf('-');
+
+                if (colonIndex > -1) {
+                  prefix = title.substring(0, colonIndex).trim();
+                } else if (dashIndex > -1) {
+                  prefix = title.substring(0, dashIndex).trim();
                 }
 
                 return (
@@ -299,7 +297,20 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                         {prefix}
                       </p>
                     )}
-                    <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold leading-tight" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                    <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight"
+                       style={{
+                         fontFamily: "'Dancing Script', cursive",
+                         fontWeight: '300',
+                         background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
+                         backgroundSize: '200% 200%',
+                         WebkitBackgroundClip: 'text',
+                         WebkitTextFillColor: 'transparent',
+                         backgroundClip: 'text',
+                         WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
+                         textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
+                         filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
+                         animation: 'shimmer 6s ease-in-out infinite'
+                       }}>
                       Color Of Us
                     </p>
                   </div>
@@ -439,18 +450,21 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide mb-2">
             {(() => {
               const title = event.title;
-              /* Remove all Color Of Us variations from title */
+              /* Remove all Color Of Us variations - be more aggressive */
               let cleanedTitle = title
-                .replace(/[:\-\s]*COLOR\s+OF\s+US/i, '')
-                .replace(/[:\-\s]*Color\s+Of\s+Us/i, '')
-                .replace(/[:\-\s]*color\s+of\s+us/i, '')
-                .replace(/[:\-\s]*COLOROFUS/i, '')
-                .replace(/[:\-\s]*ColorOfUs/i, '')
-                .replace(/^[:\-\s]+/, '') // Remove leading colons, dashes, spaces
+                .replace(/COLOR\s*OF\s*US/gi, '') // "COLOR OF US" any spacing
+                .replace(/colorofus/gi, '')
+                .replace(/color.*us/gi, '') // Any "color...us" pattern
+                .replace(/[:\-\s]+$/, '') // Remove trailing separators
+                .replace(/^[:\-\s]+/, '') // Remove leading separators
                 .trim();
 
-              // If result is empty or just "SASIENALA", show the cleaned version or original
-              return cleanedTitle && cleanedTitle.length > 2 ? cleanedTitle : title;
+              // If title becomes empty or too short after cleaning, just don't show it
+              if (!cleanedTitle || cleanedTitle.length <= 2) {
+                return null; // Don't show the title at all
+              }
+
+              return cleanedTitle;
             })()}
           </h1>
 
