@@ -572,7 +572,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 </svg>
                 <div className="h-px w-8 sm:w-12 bg-sasie-gold/40"></div>
               </div>
-              <p className="text-sasie-mocca font-medium text-sm">Kindly confirm your attendance through the link below</p>
+              <p className="text-sasie-mocca font-medium text-sm">Mohon konfirmasi kehadiran Anda melalui tombol di bawah ini</p>
             </div>
 
             {/* Yes Button - Shiny Gold */}
@@ -600,8 +600,8 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
                   {/* Text */}
                   <div className="text-left">
-                    <p className="text-white font-semibold text-sm sm:text-base">Yes, I'll attend</p>
-                    <p className="text-white/80 text-xs">Looking forward to it</p>
+                    <p className="text-white font-semibold text-sm sm:text-base">Saya dengan senang hati akan menghadiri</p>
+                    <p className="text-white/80 text-xs">Menantikan kehadiran Anda</p>
                   </div>
 
                   {/* Arrow */}
@@ -636,8 +636,8 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
                   {/* Text */}
                   <div className="text-left">
-                    <p className="text-sasie-mocca font-semibold text-sm sm:text-base">Sorry, can't make it</p>
-                    <p className="text-sasie-milo/70 text-xs">I'll catch you next time</p>
+                    <p className="text-sasie-mocca font-semibold text-sm sm:text-base">Mohon maaf, saya belum dapat menghadiri undangan ini</p>
+                    <p className="text-sasie-milo/70 text-xs">Semoga dapat bertemu di kesempatan lain</p>
                   </div>
 
                   {/* Arrow */}
