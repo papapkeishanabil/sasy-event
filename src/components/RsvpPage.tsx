@@ -439,14 +439,18 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide mb-2">
             {(() => {
               const title = event.title;
-              /* Remove Color Of Us variations from title */
-              const cleanedTitle = title
-                .replace(/:?\s*Color Of Us/i, '')
-                .replace(/:?\s*COLOR OF US/i, '')
-                .replace(/:?\s*color of us/i, '')
-                .replace(/:\s*$/, '')
+              /* Remove all Color Of Us variations from title */
+              let cleanedTitle = title
+                .replace(/[:\-\s]*COLOR\s+OF\s+US/i, '')
+                .replace(/[:\-\s]*Color\s+Of\s+Us/i, '')
+                .replace(/[:\-\s]*color\s+of\s+us/i, '')
+                .replace(/[:\-\s]*COLOROFUS/i, '')
+                .replace(/[:\-\s]*ColorOfUs/i, '')
+                .replace(/^[:\-\s]+/, '') // Remove leading colons, dashes, spaces
                 .trim();
-              return cleanedTitle || title;
+
+              // If result is empty or just "SASIENALA", show the cleaned version or original
+              return cleanedTitle && cleanedTitle.length > 2 ? cleanedTitle : title;
             })()}
           </h1>
 
