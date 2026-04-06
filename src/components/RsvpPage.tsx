@@ -274,22 +274,44 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
               </div>
             )}
             {/* Show event title */}
-            {event.title.includes(':') || event.title.includes('COLOR OF US') || event.title.includes('Color Of Us') ? (
-              <div className="flex flex-col items-center gap-1 sm:gap-2">
-                <p className="text-mahogany-brown text-base sm:text-lg mt-2 sm:mt-3 font-medium">
-                  {event.title.split(':')[0] || event.title.split('COLOR')[0] || event.title.split('Color')[0]}
+            {(() => {
+              const title = event.title;
+              const hasColorOfUs = title.toLowerCase().includes('color of us') ||
+                                   title.toLowerCase().includes('color') ||
+                                   title.includes('COLOR');
+
+              if (hasColorOfUs) {
+                // Extract the part before "Color Of Us"
+                let prefix = '';
+                if (title.includes('-')) {
+                  prefix = title.split('-')[1]?.trim() || '';
+                } else if (title.includes(':')) {
+                  prefix = title.split(':')[1]?.trim() || '';
+                } else if (title.toLowerCase().includes('color of us')) {
+                  const parts = title.split(/color of us/i);
+                  prefix = parts[1]?.trim() || parts[0]?.trim().replace(/color/i, '').trim() || '';
+                }
+
+                return (
+                  <div className="flex flex-col items-center gap-1 sm:gap-2">
+                    {prefix && (
+                      <p className="text-mahogany-brown text-base sm:text-lg mt-2 sm:mt-3 font-medium">
+                        {prefix}
+                      </p>
+                    )}
+                    <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                      Color Of Us
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <p className="text-mahogany-brown text-lg sm:text-xl mt-2 sm:mt-3 font-medium">
+                  {title.includes('×') ? title.split('×')[1]?.trim() || title : title}
                 </p>
-                <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
-                  Color Of Us
-                </p>
-              </div>
-            ) : (
-              <p className="text-mahogany-brown text-lg sm:text-xl mt-2 sm:mt-3 font-medium">
-                {event.title.includes('×')
-                  ? event.title.split('×')[1]?.trim() || event.title
-                  : event.title}
-              </p>
-            )}
+              );
+            })()}
           </div>
 
           {/* Title */}
@@ -397,20 +419,44 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
           <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
           <div className="mb-1 sm:mb-2">
-            {event.title.includes(':') || event.title.includes('COLOR OF US') || event.title.includes('Color Of Us') ? (
-              <div className="flex flex-col items-center gap-1 sm:gap-2">
-                <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide">
-                  {event.title.split(':')[0] || event.title.split('COLOR')[0] || event.title.split('Color')[0]}
+            {(() => {
+              const title = event.title;
+              const hasColorOfUs = title.toLowerCase().includes('color of us') ||
+                                   title.toLowerCase().includes('color') ||
+                                   title.includes('COLOR');
+
+              if (hasColorOfUs) {
+                // Extract the part before "Color Of Us"
+                let prefix = '';
+                if (title.includes('-')) {
+                  prefix = title.split('-')[1]?.trim() || '';
+                } else if (title.includes(':')) {
+                  prefix = title.split(':')[1]?.trim() || '';
+                } else if (title.toLowerCase().includes('color of us')) {
+                  const parts = title.split(/color of us/i);
+                  prefix = parts[1]?.trim() || parts[0]?.trim().replace(/color/i, '').trim() || '';
+                }
+
+                return (
+                  <div className="flex flex-col items-center gap-1 sm:gap-2">
+                    {prefix && (
+                      <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide">
+                        {prefix}
+                      </h1>
+                    )}
+                    <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                      Color Of Us
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
+                  {title}
                 </h1>
-                <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
-                  Color Of Us
-                </p>
-              </div>
-            ) : (
-              <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
-                {event.title}
-              </h1>
-            )}
+              );
+            })()}
           </div>
           <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
 
