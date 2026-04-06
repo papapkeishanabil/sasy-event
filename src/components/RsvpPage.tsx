@@ -435,16 +435,16 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
           <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
 
-          {/* Event Title - remove "Color Of Us" if already present */}
+          {/* Event Title - remove Color Of Us if already present */}
           <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide mb-2">
             {(() => {
               const title = event.title;
-              // Remove "Color Of Us", "COLOR OF US", or ": Color Of Us" from title
+              /* Remove Color Of Us variations from title */
               const cleanedTitle = title
                 .replace(/:?\s*Color Of Us/i, '')
                 .replace(/:?\s*COLOR OF US/i, '')
                 .replace(/:?\s*color of us/i, '')
-                .replace(/:\s*$/, '') // Remove trailing colon if any
+                .replace(/:\s*$/, '')
                 .trim();
               return cleanedTitle || title;
             })()}
@@ -453,12 +453,10 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           {/* Color Of Us - Same gradient as guest name */}
           <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] -mt-2 sm:-mt-3 mb-6 sm:mb-8 relative"
              style={{
-               paddingBottom: '0.5em',
-               overflow: 'visible'
-             }}>
-             style={{
                fontFamily: "'Dancing Script', cursive",
                fontWeight: '300',
+               paddingBottom: '0.5em',
+               overflow: 'visible',
                background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
                backgroundSize: '200% 200%',
                WebkitBackgroundClip: 'text',
