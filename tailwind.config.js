@@ -58,6 +58,7 @@ export default {
         'warm-sage': '#9CAF94',
       },
       fontFamily: {
+        'elegant': ['"Playfair Display"', 'serif'],
         'worksans': ['"Work Sans"', 'sans-serif'],
         sans: ['"Work Sans"', 'sans-serif'],
       },

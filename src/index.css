@@ -12,10 +12,15 @@
     background: linear-gradient(135deg, #F8E8E8 0%, #FCF0F0 50%, #FFFEF9 100%);
     min-height: 100vh;
   }
-  /* FORCE WORK SANS FONT EVERYWHERE */
-  *,
-  *::before,
-  *::after {
+  /* Elegant font for headings */
+  h1, h2, h3, h4, h5, h6,
+  .font-elegant, .heading-text,
+  .event-title, .guest-name {
+    font-family: 'Playfair Display', serif !important;
+  }
+  /* Work Sans for body text */
+  p, span, div, button, input, textarea,
+  *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
     font-family: 'Work Sans', sans-serif !important;
   }
 }

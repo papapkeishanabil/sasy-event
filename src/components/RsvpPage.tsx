@@ -282,7 +282,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl font-light text-mahogany-brown mb-2 tracking-wide">You're Invited</h1>
+          <h1 className="font-elegant text-2xl sm:text-3xl font-light text-mahogany-brown mb-2 tracking-wide">You're Invited</h1>
           <p className="text-sage-green/70 text-xs sm:text-sm mb-8 sm:mb-12 tracking-widest uppercase">Digital Invitation</p>
 
           {/* Open Button */}
@@ -335,11 +335,11 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         {/* Guest Name - MOVED TO TOP */}
         {guest && (
           <div className="text-center mb-6 sm:mb-8 animate-slide-up">
-            <p className="text-sage-green/70 text-xs sm:text-sm mb-1.5 sm:mb-2">Dear Sassyfriend</p>
+            <p className="font-elegant italic text-sage-green/70 text-xs sm:text-sm mb-1.5 sm:mb-2">Dear Sassyfriend</p>
 
             {/* Guest Name - Block display */}
             <div className="mb-3 sm:mb-4">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold relative inline-block">
+              <h2 className="guest-name font-elegant text-xl sm:text-2xl md:text-3xl font-semibold relative inline-block">
                 <span className="relative inline-block">
                   {/* Gold 3D Effect for Guest Name */}
                   <span className="relative z-10 bg-gradient-to-br from-champagne-gold via-mahogany-brown to-champagne-gold bg-clip-text text-transparent drop-shadow-lg"
@@ -381,8 +381,8 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-champagne-gold/50 to-transparent"></div>
           </div>
 
-          <p className="text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
+          <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
+          <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
             {event.title}
           </h1>
           <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
@@ -453,7 +453,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
         {/* Special Guest Experience */}
         <section className="bg-cream-ivory/70 backdrop-blur-sm rounded-2xl border border-blush-pink-dark/20 p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <h3 className="text-sm font-semibold text-mahogany-brown mb-3 sm:mb-4">As our special guest, you will experience:</h3>
+          <h3 className="font-elegant text-sm font-semibold text-mahogany-brown mb-3 sm:mb-4">As our special guest, you will experience:</h3>
           <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-sage-green">
             <div className="flex items-start gap-2">
               <span>✨</span>
@@ -500,7 +500,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-mahogany-brown">Dress Code</h3>
+              <h3 className="font-elegant text-sm font-semibold text-mahogany-brown">Dress Code</h3>
               <p className="text-xs text-sage-green/70">Your Personal Palette</p>
             </div>
           </div>
@@ -689,7 +689,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-mahogany-brown mb-2">You're Confirmed!</h3>
+            <h3 className="font-elegant text-lg sm:text-xl font-semibold text-mahogany-brown mb-2">You're Confirmed!</h3>
             <p className="text-sage-green/70 text-xs sm:text-sm mb-4 sm:mb-6">Show this QR code at the entrance</p>
 
             {/* QR Code Display */}
@@ -757,7 +757,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-mahogany-brown mb-2">Response Recorded</h3>
+            <h3 className="font-elegant text-lg sm:text-xl font-semibold text-mahogany-brown mb-2">Response Recorded</h3>
             <p className="text-sage-green/70 text-sm sm:text-base">We're sorry you can't make it. We hope to see you at our next event!</p>
           </section>
         )}
