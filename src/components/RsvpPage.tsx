@@ -435,7 +435,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div class="flex-1">
+                  <div className="flex-1">
                     <p className="text-xs text-sasie-milo/50 uppercase tracking-widest mb-1">Time</p>
                     <p className="text-lg sm:text-xl font-light text-sasie-mocca">{event.time}</p>
                   </div>
