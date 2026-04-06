@@ -20,6 +20,13 @@
   div.color-of-us-text {
     font-family: 'Dancing Script', cursive !important;
   }
+
+  /* Shimmer animation for shiny gold text */
+  @keyframes shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
   /* Elegant font for headings */
   h1, h2, h3, h4, h5, h6,
   .font-elegant, .heading-text,

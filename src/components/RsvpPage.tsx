@@ -317,8 +317,20 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           {/* Title */}
           <h1 className="font-elegant text-2xl sm:text-3xl font-light text-mahogany-brown mb-2 tracking-wide">You're Invited</h1>
 
-          {/* Color Of Us - Dancing Script */}
-          <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-champagne-gold leading-tight mb-3 sm:mb-4 -mt-1" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 12px rgba(212, 175, 55, 0.5)' }}>
+          {/* Color Of Us - Dancing Script (thin, shiny gold) */}
+          <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight mb-3 sm:mb-4 -mt-1 relative"
+             style={{
+               fontFamily: "'Dancing Script', cursive",
+               fontWeight: '300',
+               background: 'linear-gradient(135deg, #FFE5A0 0%, #D4AF37 25%, #FFE5A0 50%, #B8941F 75%, #FFE5A0 100%)',
+               backgroundSize: '200% auto',
+               WebkitBackgroundClip: 'text',
+               WebkitTextFillColor: 'transparent',
+               backgroundClip: 'text',
+               WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.3)',
+               filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
+               animation: 'shimmer 3s linear infinite'
+             }}>
             Color Of Us
           </p>
 
@@ -437,8 +449,20 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             })()}
           </h1>
 
-          {/* Color Of Us - Always displayed with Dancing Script (not bold) */}
-          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal text-champagne-gold leading-tight -mt-2 sm:-mt-3 mb-3" style={{ fontFamily: "'Dancing Script', cursive", fontWeight: '400', textShadow: '0 2px 12px rgba(212, 175, 55, 0.4)' }}>
+          {/* Color Of Us - Always displayed with Dancing Script (thin, shiny gold) */}
+          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight -mt-2 sm:-mt-3 mb-3 relative"
+             style={{
+               fontFamily: "'Dancing Script', cursive",
+               fontWeight: '300',
+               background: 'linear-gradient(135deg, #FFE5A0 0%, #D4AF37 25%, #FFE5A0 50%, #B8941F 75%, #FFE5A0 100%)',
+               backgroundSize: '200% auto',
+               WebkitBackgroundClip: 'text',
+               WebkitTextFillColor: 'transparent',
+               backgroundClip: 'text',
+               WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.3)',
+               filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
+               animation: 'shimmer 3s linear infinite'
+             }}>
             Color Of Us
           </p>
 
