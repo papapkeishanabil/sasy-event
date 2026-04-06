@@ -488,7 +488,17 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             Color Of Us
           </p>
 
-          <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
+          <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">
+            {(() => {
+              const desc = event.description || 'Launch Event';
+              /* Remove event title and Color Of Us from description */
+              return desc
+                .replace(/^SASIENALA\s*:\s*/i, '') // Remove "SASIENALA:" prefix
+                .replace(/color\s*of\s*us/gi, '') // Remove "Color Of Us"
+                .replace(/find your color, find your circle/gi, 'Find Your Color, Find Your Circle') // Keep this
+                .trim() || 'Launch Event';
+            })()}
+          </p>
 
           <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
             <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-champagne-gold/50 to-transparent"></div>
