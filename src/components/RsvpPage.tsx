@@ -468,26 +468,6 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             })()}
           </h1>
 
-          {/* Color Of Us - Same gradient as guest name */}
-          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] -mt-2 sm:-mt-3 mb-6 sm:mb-8 relative"
-             style={{
-               fontFamily: "'Dancing Script', cursive",
-               fontWeight: '300',
-               paddingBottom: '0.5em',
-               overflow: 'visible',
-               background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
-               backgroundSize: '200% 200%',
-               WebkitBackgroundClip: 'text',
-               WebkitTextFillColor: 'transparent',
-               backgroundClip: 'text',
-               WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
-               textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
-               filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
-               animation: 'shimmer 6s ease-in-out infinite'
-             }}>
-            Color Of Us
-          </p>
-
           <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">
             {(() => {
               const desc = event.description || 'Launch Event';
