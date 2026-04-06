@@ -383,7 +383,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
       </div>
 
       {/* Content - Responsive */}
-      <div className="relative z-10 mx-auto px-4 py-6 sm:px-6 sm:py-8 md:py-12 max-w-2xl lg:max-w-4xl">
+      <div className="relative z-10 mx-auto px-4 py-6 sm:px-6 sm:py-8 md:py-12 max-w-2xl lg:max-w-4xl overflow-visible">
         {/* Guest Name - MOVED TO TOP */}
         {guest && (
           <div className="text-center mb-6 sm:mb-8 animate-slide-up">
@@ -426,7 +426,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         )}
 
         {/* Header */}
-        <header className="text-center mb-8 sm:mb-12 animate-fade-in">
+        <header className="text-center mb-8 sm:mb-12 animate-fade-in overflow-visible">
           <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-champagne-gold/50 to-transparent"></div>
             <div className="w-1.5 h-1.5 rounded-full bg-champagne-gold"></div>
@@ -451,7 +451,11 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </h1>
 
           {/* Color Of Us - Same gradient as guest name */}
-          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight -mt-2 sm:-mt-3 mb-6 sm:mb-8 relative"
+          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.3] -mt-2 sm:-mt-3 mb-6 sm:mb-8 relative"
+             style={{
+               paddingBottom: '0.5em',
+               overflow: 'visible'
+             }}>
              style={{
                fontFamily: "'Dancing Script', cursive",
                fontWeight: '300',
