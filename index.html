@@ -21,14 +21,5 @@
   <body class="bg-white text-sasie-black antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {
-            // Service worker registration failed, but app still works
-          });
-        });
-      }
-    </script>
   </body>
 </html>
