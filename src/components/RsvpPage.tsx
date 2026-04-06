@@ -316,9 +316,12 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
           {/* Title */}
           <h1 className="font-elegant text-2xl sm:text-3xl font-light text-mahogany-brown mb-2 tracking-wide">You're Invited</h1>
-          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold mb-3 sm:mb-4" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+
+          {/* Color Of Us - Dancing Script */}
+          <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-champagne-gold leading-tight mb-3 sm:mb-4 -mt-1" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 12px rgba(212, 175, 55, 0.5)' }}>
             Color Of Us
           </p>
+
           <p className="text-sage-green/70 text-xs sm:text-sm mb-8 sm:mb-12 tracking-widest uppercase">Digital Invitation</p>
 
           {/* Open Button */}
@@ -418,46 +421,17 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </div>
 
           <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
-          <div className="mb-1 sm:mb-2">
-            {(() => {
-              const title = event.title;
-              const hasColorOfUs = title.toLowerCase().includes('color of us') ||
-                                   title.toLowerCase().includes('color') ||
-                                   title.includes('COLOR');
 
-              if (hasColorOfUs) {
-                // Extract the part before "Color Of Us"
-                let prefix = '';
-                if (title.includes('-')) {
-                  prefix = title.split('-')[1]?.trim() || '';
-                } else if (title.includes(':')) {
-                  prefix = title.split(':')[1]?.trim() || '';
-                } else if (title.toLowerCase().includes('color of us')) {
-                  const parts = title.split(/color of us/i);
-                  prefix = parts[1]?.trim() || parts[0]?.trim().replace(/color/i, '').trim() || '';
-                }
+          {/* Event Title */}
+          <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide mb-2">
+            {event.title}
+          </h1>
 
-                return (
-                  <div className="flex flex-col items-center gap-1 sm:gap-2">
-                    {prefix && (
-                      <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide">
-                        {prefix}
-                      </h1>
-                    )}
-                    <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-champagne-gold leading-tight" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
-                      Color Of Us
-                    </p>
-                  </div>
-                );
-              }
+          {/* Color Of Us - Always displayed with Dancing Script */}
+          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-champagne-gold leading-tight -mt-2 sm:-mt-3 mb-3" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 12px rgba(212, 175, 55, 0.4)' }}>
+            Color Of Us
+          </p>
 
-              return (
-                <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
-                  {title}
-                </h1>
-              );
-            })()}
-          </div>
           <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
 
           <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
