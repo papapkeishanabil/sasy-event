@@ -274,11 +274,22 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
               </div>
             )}
             {/* Show event title */}
-            <p className="text-mahogany-brown text-lg sm:text-xl mt-2 sm:mt-3 font-medium">
-              {event.title.includes('×')
-                ? event.title.split('×')[1]?.trim() || event.title
-                : event.title}
-            </p>
+            {event.title.includes(':') || event.title.includes('COLOR OF US') || event.title.includes('Color Of Us') ? (
+              <div className="flex flex-col items-center gap-1 sm:gap-2">
+                <p className="text-mahogany-brown text-base sm:text-lg mt-2 sm:mt-3 font-medium">
+                  {event.title.split(':')[0] || event.title.split('COLOR')[0] || event.title.split('Color')[0]}
+                </p>
+                <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                  Color Of Us
+                </p>
+              </div>
+            ) : (
+              <p className="text-mahogany-brown text-lg sm:text-xl mt-2 sm:mt-3 font-medium">
+                {event.title.includes('×')
+                  ? event.title.split('×')[1]?.trim() || event.title
+                  : event.title}
+              </p>
+            )}
           </div>
 
           {/* Title */}
@@ -385,12 +396,22 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </div>
 
           <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
-          <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
-            {event.title}
-          </h1>
-          <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl font-bold text-champagne-gold mt-1 sm:mt-2" style={{ textShadow: '0 2px 4px rgba(212, 175, 55, 0.2)' }}>
-            Color Of Us
-          </p>
+          <div className="mb-1 sm:mb-2">
+            {event.title.includes(':') || event.title.includes('COLOR OF US') || event.title.includes('Color Of Us') ? (
+              <div className="flex flex-col items-center gap-1 sm:gap-2">
+                <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide">
+                  {event.title.split(':')[0] || event.title.split('COLOR')[0] || event.title.split('Color')[0]}
+                </h1>
+                <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-champagne-gold leading-tight" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+                  Color Of Us
+                </p>
+              </div>
+            ) : (
+              <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
+                {event.title}
+              </h1>
+            )}
+          </div>
           <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
 
           <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
