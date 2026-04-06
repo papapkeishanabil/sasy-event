@@ -451,7 +451,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </h1>
 
           {/* Color Of Us - Same gradient as guest name */}
-          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight -mt-2 sm:-mt-3 mb-3 relative"
+          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight -mt-2 sm:-mt-3 mb-6 sm:mb-8 relative"
              style={{
                fontFamily: "'Dancing Script', cursive",
                fontWeight: '300',
