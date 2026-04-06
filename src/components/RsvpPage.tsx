@@ -491,12 +491,72 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         </section>
 
         {/* Dress Code */}
-        <section className="bg-gradient-to-br from-sasie-gold/10 to-sasie-bronze/10 backdrop-blur-sm rounded-2xl border border-sasie-gold/30 p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
-          <h3 className="text-sm font-semibold text-sasie-mocca mb-2">Dress Code:</h3>
-          <p className="text-xs sm:text-sm text-sasie-milo/70 mb-2">Your Personal Palette</p>
-          <p className="text-xs sm:text-sm text-sasie-mocca">Come dressed in any color that makes you feel confident!</p>
-          <div className="mt-2 pt-2 border-t border-sasie-gold/20">
-            <p className="text-[10px] sm:text-xs text-sasie-marun/80"><strong>Exclusions:</strong> Please refrain from wearing Black, Soft Pink, Soft Salmon, or Burgundy for this special occasion.</p>
+        <section className="mb-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+          {/* Header with Icon */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sasie-gold to-sasie-bronze flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-sasie-mocca">Dress Code</h3>
+              <p className="text-xs text-sasie-milo/70">Your Personal Palette</p>
+            </div>
+          </div>
+
+          {/* Main Message */}
+          <div className="bg-gradient-to-r from-sasie-cream to-white rounded-xl p-4 mb-4 shadow-sm">
+            <p className="text-sm text-sasie-mocca text-center">
+              ✨ Come dressed in any color that makes you feel confident! ✨
+            </p>
+          </div>
+
+          {/* Color Palette Showcase */}
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-sasie-gold/20 mb-4">
+            <p className="text-xs font-medium text-sasie-milo/80 mb-3 text-center">Express Your True Colors</p>
+            <div className="flex justify-center gap-2 flex-wrap">
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-rose-600 shadow-md mb-1"></div>
+                <span className="text-[9px] text-sasie-milo/60">Rose</span>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-md mb-1"></div>
+                <span className="text-[9px] text-sasie-milo/60">Amber</span>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-md mb-1"></div>
+                <span className="text-[9px] text-sasie-milo/60">Emerald</span>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 shadow-md mb-1"></div>
+                <span className="text-[9px] text-sasie-milo/60">Sky</span>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 shadow-md mb-1"></div>
+                <span className="text-[9px] text-sasie-milo/60">Violet</span>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-md mb-1"></div>
+                <span className="text-[9px] text-sasie-milo/60">Orange</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Exclusions - More Gentle Design */}
+          <div className="bg-gradient-to-r from-sasie-marun/5 to-sasie-dove/30 rounded-xl p-3 border border-sasie-marun/10">
+            <div className="flex items-start gap-2">
+              <span className="text-lg">💝</span>
+              <div>
+                <p className="text-xs font-medium text-sasie-marun mb-1">Kindly Avoid:</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2 py-1 bg-black text-white text-[9px] rounded-full">Black</span>
+                  <span className="px-2 py-1 bg-pink-200 text-pink-800 text-[9px] rounded-full">Soft Pink</span>
+                  <span className="px-2 py-1 bg-orange-200 text-orange-800 text-[9px] rounded-full">Soft Salmon</span>
+                  <span className="px-2 py-1 bg-red-800 text-white text-[9px] rounded-full">Burgundy</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
