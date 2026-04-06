@@ -467,8 +467,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-sasie-mocca mb-1">{event.location}</p>
-                  <p className="text-xs text-sasie-milo/60">{event.locationAddress}</p>
+                  <p className="text-sm text-sasie-milo/60">{event.locationAddress}</p>
                 </div>
               </div>
 
