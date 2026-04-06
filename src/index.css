@@ -12,6 +12,11 @@
     background: linear-gradient(135deg, #F8E8E8 0%, #FCF0F0 50%, #FFFEF9 100%);
     min-height: 100vh;
   }
+  /* Dancing Script for "Color Of Us" branding */
+  .color-of-us-text,
+  .font-dancing {
+    font-family: 'Dancing Script', cursive !important;
+  }
   /* Elegant font for headings */
   h1, h2, h3, h4, h5, h6,
   .font-elegant, .heading-text,

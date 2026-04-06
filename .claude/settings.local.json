@@ -72,7 +72,8 @@
       "Bash(npm list:*)",
       "Bash(vercel ls:*)",
       "Bash(vercel logs:*)",
-      "Bash(vercel --prod --force)"
+      "Bash(vercel --prod --force)",
+      "Bash(start font-preview.html)"
     ]
   }
 }

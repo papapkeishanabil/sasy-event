@@ -58,6 +58,7 @@ export default {
         'warm-sage': '#9CAF94',
       },
       fontFamily: {
+        'dancing': ['"Dancing Script"', 'cursive'],
         'elegant': ['"Playfair Display"', 'serif'],
         'worksans': ['"Work Sans"', 'sans-serif'],
         sans: ['"Work Sans"', 'sans-serif'],

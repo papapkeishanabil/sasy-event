@@ -283,6 +283,9 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
           {/* Title */}
           <h1 className="font-elegant text-2xl sm:text-3xl font-light text-mahogany-brown mb-2 tracking-wide">You're Invited</h1>
+          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl font-bold text-champagne-gold mb-3 sm:mb-4" style={{ textShadow: '0 2px 8px rgba(212, 175, 55, 0.3)' }}>
+            Color Of Us
+          </p>
           <p className="text-sage-green/70 text-xs sm:text-sm mb-8 sm:mb-12 tracking-widest uppercase">Digital Invitation</p>
 
           {/* Open Button */}
@@ -385,6 +388,9 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide">
             {event.title}
           </h1>
+          <p className="color-of-us-text text-2xl sm:text-3xl md:text-4xl font-bold text-champagne-gold mt-1 sm:mt-2" style={{ textShadow: '0 2px 4px rgba(212, 175, 55, 0.2)' }}>
+            Color Of Us
+          </p>
           <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
 
           <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
