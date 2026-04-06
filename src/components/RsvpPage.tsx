@@ -422,13 +422,23 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
           <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
 
-          {/* Event Title */}
-          <h1 className="event-title font-elegant text-lg sm:text-xl md:text-2xl font-semibold text-mahogany-brown tracking-wide mb-2">
-            {event.title}
+          {/* Event Title - remove "Color Of Us" if already present */}
+          <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide mb-2">
+            {(() => {
+              const title = event.title;
+              // Remove "Color Of Us", "COLOR OF US", or ": Color Of Us" from title
+              const cleanedTitle = title
+                .replace(/:?\s*Color Of Us/i, '')
+                .replace(/:?\s*COLOR OF US/i, '')
+                .replace(/:?\s*color of us/i, '')
+                .replace(/:\s*$/, '') // Remove trailing colon if any
+                .trim();
+              return cleanedTitle || title;
+            })()}
           </h1>
 
-          {/* Color Of Us - Always displayed with Dancing Script */}
-          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-champagne-gold leading-tight -mt-2 sm:-mt-3 mb-3" style={{ fontFamily: "'Dancing Script', cursive", textShadow: '0 2px 12px rgba(212, 175, 55, 0.4)' }}>
+          {/* Color Of Us - Always displayed with Dancing Script (not bold) */}
+          <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal text-champagne-gold leading-tight -mt-2 sm:-mt-3 mb-3" style={{ fontFamily: "'Dancing Script', cursive", fontWeight: '400', textShadow: '0 2px 12px rgba(212, 175, 55, 0.4)' }}>
             Color Of Us
           </p>
 
