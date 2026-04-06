@@ -329,7 +329,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                backgroundClip: 'text',
                WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.3)',
                filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
-               animation: 'shimmer 3s linear infinite'
+               animation: 'shimmer 6s ease-in-out infinite'
              }}>
             Color Of Us
           </p>
@@ -461,7 +461,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                backgroundClip: 'text',
                WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.3)',
                filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
-               animation: 'shimmer 3s linear infinite'
+               animation: 'shimmer 6s ease-in-out infinite'
              }}>
             Color Of Us
           </p>
