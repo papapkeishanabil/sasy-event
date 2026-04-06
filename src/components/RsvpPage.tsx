@@ -395,57 +395,72 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         </header>
 
         {/* Event Details */}
-        <section className="bg-white/60 backdrop-blur-sm rounded-2xl border border-sasie-dove p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <div className="space-y-3 sm:space-y-5">
-            {/* Date */}
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sasie-gold/10 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs text-sasie-milo/70 uppercase tracking-wider mb-0.5">Date</p>
-                <p className="text-sm sm:text-base text-sasie-mocca font-medium">{event.date}</p>
-              </div>
-            </div>
-
-            {/* Time */}
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sasie-gold/10 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs text-sasie-milo/70 uppercase tracking-wider mb-0.5">Time</p>
-                <p className="text-sm sm:text-base text-sasie-mocca font-medium">{event.time}</p>
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sasie-gold/10 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-sasie-milo/70 uppercase tracking-wider mb-0.5">Location</p>
-                <p className="text-sm sm:text-base text-sasie-mocca font-medium">{event.location}</p>
-                {event.locationAddress && (
-                  <p className="text-sasie-milo/70 text-xs sm:text-sm mt-0.5">{event.locationAddress}</p>
-                )}
-                <button
-                  onClick={openGoogleMaps}
-                  className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-sasie-gold hover:text-sasie-bronze transition"
-                >
-                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        <section className="mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {/* Date Card - More Prominent */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-sasie-gold via-sasie-bronze to-amber-600 rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  Open in Google Maps
-                </button>
+                  <span className="text-xs text-white/70 uppercase tracking-wider">Save the Date</span>
+                </div>
+                <p className="text-white font-bold text-lg sm:text-xl">{event.date}</p>
+              </div>
+            </div>
+
+            {/* Time Card */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-sasie-milo via-sasie-mocca to-sasie-marun rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-xs text-white/70 uppercase tracking-wider">Time</span>
+                </div>
+                <p className="text-white font-bold text-lg sm:text-xl">{event.time}</p>
+              </div>
+            </div>
+
+            {/* Location Card - Full Width */}
+            <div className="md:col-span-2 bg-white rounded-2xl p-4 sm:p-6 shadow-md border border-sasie-gold/20">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                {/* Location Icon */}
+                <div className="flex-shrink-0">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-sasie-gold/20 to-sasie-bronze/20 flex items-center justify-center">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Location Info */}
+                <div className="flex-1">
+                  <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-1">Location</p>
+                  <p className="text-base sm:text-lg font-semibold text-sasie-mocca mb-1">{event.location}</p>
+                  {event.locationAddress && (
+                    <p className="text-sm text-sasie-milo/70 mb-3">{event.locationAddress}</p>
+                  )}
+
+                  {/* Google Maps Button - More Prominent */}
+                  <button
+                    onClick={openGoogleMaps}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-sasie-gold to-sasie-bronze text-white px-4 py-2.5 rounded-xl font-medium text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span>Open in Google Maps</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
