@@ -5,7 +5,11 @@ interface LandingScreenProps {
   onOperatorClick: () => void;
 }
 
-const LandingScreen: React.FC<LandingScreenProps> = ({ onScanClick, onSearchClick, onOperatorClick }) => {
+const LandingScreen: React.FC<LandingScreenProps> = ({
+  onScanClick,
+  onSearchClick,
+  onOperatorClick
+}) => {
   return (
     <div className="page-transition min-h-[calc(100vh-140px)] flex flex-col items-center justify-center px-6 relative overflow-hidden">
       {/* Elegant Background Pattern */}
@@ -75,7 +79,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onScanClick, onSearchClic
             onClick={onScanClick}
             className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sasie-gold via-sasie-bronze to-sasie-gold bg-[length:200%_100%] p-[2px] transition-all duration-500 hover:bg-[position:100%_0] shadow-lg hover:shadow-xl hover:shadow-sasie-gold/20"
           >
-            <div className="relative flex items-center justify-center gap-3 rounded-2xl bg-sasie-cream py-5 px-8 transition-all duration-300 group-hover:bg-opacity-90">
+            <div className="relative flex items-center justify-center gap-3 rounded-2xl bg-sasie-cream py-[18px] px-8 transition-all duration-300 group-hover:bg-opacity-90">
               <svg className="w-6 h-6 text-sasie-gold transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
@@ -85,10 +89,10 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onScanClick, onSearchClic
 
           <button
             onClick={onSearchClick}
-            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sasie-mocca via-sasie-brown to-sasie-mocca bg-[length:200%_100%] p-[2px] transition-all duration-500 hover:bg-[position:100%_0] shadow-lg hover:shadow-xl hover:shadow-sasie-gold/20"
+            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sasie-gold via-sasie-bronze to-sasie-gold bg-[length:200%_100%] p-[2px] transition-all duration-500 hover:bg-[position:100%_0] shadow-lg hover:shadow-xl hover:shadow-sasie-gold/20"
           >
-            <div className="relative flex items-center justify-center gap-3 rounded-2xl bg-sasie-cream py-5 px-8 transition-all duration-300 group-hover:bg-opacity-90">
-              <svg className="w-6 h-6 text-sasie-mocca transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative flex items-center justify-center gap-3 rounded-2xl bg-sasie-cream py-[18px] px-8 transition-all duration-300 group-hover:bg-opacity-90">
+              <svg className="w-6 h-6 text-sasie-gold transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span className="text-lg font-medium text-sasie-mocca tracking-wide">Search by Name</span>

@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Guest } from '../types';
 
-type FilterType = 'all' | 'checked_in' | 'not_checked_in';
+type FilterType = 'all' | 'checked_in' | 'not_checked_in' | 'rsvp_confirmed' | 'rsvp_pending' | 'rsvp_declined' | 'rsvp_maybe';
 
 interface OperatorDashboardProps {
   guests: Guest[];
-  onCheckIn: (id: number) => { success: boolean; alreadyCheckedIn: boolean };
+  onCheckIn: (id: number) => Promise<{ success: boolean; alreadyCheckedIn: boolean }>;
   onBack: () => void;
 }
 
@@ -17,10 +17,21 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
   const filteredGuests = useMemo(() => {
     let result = guests;
 
+    // Check-in filters
     if (filter === 'checked_in') {
       result = result.filter(g => g.status === 'checked_in');
     } else if (filter === 'not_checked_in') {
       result = result.filter(g => g.status === 'not_checked_in');
+    }
+    // RSVP filters
+    else if (filter === 'rsvp_confirmed') {
+      result = result.filter(g => g.rsvpStatus === 'confirmed');
+    } else if (filter === 'rsvp_pending') {
+      result = result.filter(g => !g.rsvpStatus || g.rsvpStatus === 'pending');
+    } else if (filter === 'rsvp_declined') {
+      result = result.filter(g => g.rsvpStatus === 'declined');
+    } else if (filter === 'rsvp_maybe') {
+      result = result.filter(g => g.rsvpStatus === 'maybe');
     }
 
     if (searchQuery.trim()) {
@@ -34,8 +45,8 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
     return result;
   }, [guests, searchQuery, filter]);
 
-  const handleCheckIn = (guest: Guest) => {
-    const result = onCheckIn(guest.id);
+  const handleCheckIn = async (guest: Guest) => {
+    const result = await onCheckIn(guest.id);
 
     if (result.alreadyCheckedIn) {
       setMessage({ type: 'error', text: `${guest.name} sudah check-in` });
@@ -51,14 +62,49 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
       case 'VIP': return 'text-sasie-bronze border-sasie-gold/40 bg-sasie-gold/10';
       case 'Speaker': return 'text-sasie-marun border-sasie-terracotta/40 bg-sasie-terracotta/10';
       case 'Media': return 'text-sasie-emerald border-sasie-emerald/40 bg-sasie-sage/20';
+      case 'Owner': return 'text-sasie-mocca border-sasie-mocca/40 bg-sasie-mocca/10';
       default: return 'text-sasie-milo border-sasie-dove bg-sasie-dove/50';
     }
   };
 
+  const getRsvpStatusColor = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return 'bg-sasie-emerald/20 text-sasie-emerald border-sasie-emerald/40';
+      case 'declined': return 'bg-sasie-marun/20 text-sasie-marun border-sasie-marun/40';
+      case 'maybe': return 'bg-sasie-gold/20 text-sasie-bronze border-sasie-gold/40';
+      default: return 'bg-sasie-dove/30 text-sasie-milo border-sasie-dove';
+    }
+  };
+
+  const getRsvpStatusText = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return 'Hadir';
+      case 'declined': return 'Tidak';
+      case 'maybe': return 'Ragu';
+      default: return 'Pending';
+    }
+  };
+
+  const getRsvpStatusIcon = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return '✓';
+      case 'declined': return '✕';
+      case 'maybe': return '?';
+      default: return '…';
+    }
+  };
+
+  // Statistics
   const checkedCount = guests.filter(g => g.status === 'checked_in').length;
   const pendingCount = guests.filter(g => g.status === 'not_checked_in').length;
   const vipCheckedCount = guests.filter(g => g.category === 'VIP' && g.status === 'checked_in').length;
   const vipTotalCount = guests.filter(g => g.category === 'VIP').length;
+
+  // RSVP Statistics
+  const rsvpConfirmed = guests.filter(g => g.rsvpStatus === 'confirmed').length;
+  const rsvpPending = guests.filter(g => !g.rsvpStatus || g.rsvpStatus === 'pending').length;
+  const rsvpDeclined = guests.filter(g => g.rsvpStatus === 'declined').length;
+  const rsvpMaybe = guests.filter(g => g.rsvpStatus === 'maybe').length;
 
   return (
     <div className="page-transition min-h-[calc(100vh-140px)] flex flex-col bg-sasie-cream">
@@ -79,10 +125,11 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
         <div className="w-10"></div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Stats - Enhanced with RSVP */}
       <div className="px-4 mb-3">
         <div className="glass-card p-4">
-          <div className="grid grid-cols-4 gap-2 text-center">
+          {/* Main Stats */}
+          <div className="grid grid-cols-4 gap-2 text-center mb-3">
             <div>
               <p className="text-2xl font-bold text-sasie-mocca">{guests.length}</p>
               <p className="text-xs text-sasie-milo/70">Total</p>
@@ -100,15 +147,39 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
               <p className="text-xs text-sasie-milo/70">Pending</p>
             </div>
           </div>
+
+          {/* RSVP Stats */}
+          <div className="border-t border-sasie-dove/50 pt-3">
+            <p className="text-xs text-sasie-milo/70 text-center mb-2">Status RSVP</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div>
+                <p className="text-lg font-bold text-sasie-emerald">{rsvpConfirmed}</p>
+                <p className="text-xs text-sasie-milo/70">Hadir</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-sasie-gold">{rsvpMaybe}</p>
+                <p className="text-xs text-sasie-milo/70">Ragu</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-sasie-marun">{rsvpDeclined}</p>
+                <p className="text-xs text-sasie-milo/70">Tidak</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-sasie-milo">{rsvpPending}</p>
+                <p className="text-xs text-sasie-milo/70">Blm</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Filter Buttons */}
+      {/* Filter Buttons - Enhanced with RSVP */}
       <div className="px-4 sticky top-0 z-10 bg-sasie-cream/95 backdrop-blur-sm py-2">
-        <div className="flex gap-2 mb-3">
+        {/* Main Filters */}
+        <div className="flex gap-2 mb-2">
           <button
             onClick={() => setFilter('all')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+            className={`flex-1 py-2 px-3 rounded-xl font-medium transition-all duration-200 text-sm ${
               filter === 'all'
                 ? 'bg-sasie-mocca text-white shadow-sm'
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
@@ -120,19 +191,19 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
 
           <button
             onClick={() => setFilter('checked_in')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+            className={`flex-1 py-2 px-3 rounded-xl font-medium transition-all duration-200 text-sm ${
               filter === 'checked_in'
                 ? 'bg-sasie-emerald text-white shadow-sm'
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-emerald/50'
             }`}
           >
             <div className="text-lg font-bold">{checkedCount}</div>
-            <div className="text-xs opacity-80">HADIR</div>
+            <div className="text-xs opacity-80">CHECK-IN</div>
           </button>
 
           <button
             onClick={() => setFilter('not_checked_in')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+            className={`flex-1 py-2 px-3 rounded-xl font-medium transition-all duration-200 text-sm ${
               filter === 'not_checked_in'
                 ? 'bg-sasie-terracotta text-white shadow-sm'
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-terracotta/50'
@@ -140,6 +211,53 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
           >
             <div className="text-lg font-bold">{pendingCount}</div>
             <div className="text-xs opacity-80">BELUM</div>
+          </button>
+        </div>
+
+        {/* RSVP Filters */}
+        <div className="flex gap-2 mb-3">
+          <button
+            onClick={() => setFilter('rsvp_confirmed')}
+            className={`flex-1 py-2 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              filter === 'rsvp_confirmed'
+                ? 'bg-sasie-emerald text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-emerald/50'
+            }`}
+          >
+            ✓ Hadir ({rsvpConfirmed})
+          </button>
+
+          <button
+            onClick={() => setFilter('rsvp_maybe')}
+            className={`flex-1 py-2 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              filter === 'rsvp_maybe'
+                ? 'bg-sasie-gold text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            ? Ragu ({rsvpMaybe})
+          </button>
+
+          <button
+            onClick={() => setFilter('rsvp_pending')}
+            className={`flex-1 py-2 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              filter === 'rsvp_pending'
+                ? 'bg-sasie-milo text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-mocca/50'
+            }`}
+          >
+            … Blm ({rsvpPending})
+          </button>
+
+          <button
+            onClick={() => setFilter('rsvp_declined')}
+            className={`flex-1 py-2 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              filter === 'rsvp_declined'
+                ? 'bg-sasie-marun text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-marun/50'
+            }`}
+          >
+            ✕ Tdk ({rsvpDeclined})
           </button>
         </div>
 
@@ -205,13 +323,30 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                 key={guest.id}
                 onClick={() => handleCheckIn(guest)}
                 className={`glass-card p-3 cursor-pointer transition-all duration-200 ${
-                  guest.status === 'checked_in' ? 'border-sasie-emerald/50 bg-sasie-sage/10' : 'hover:border-sasie-gold/50'
-                } ${guest.category === 'VIP' ? 'border-l-4 border-l-sasie-gold' : ''}`}
+                  guest.status === 'checked_in'
+                    ? 'border-sasie-emerald/50 bg-sasie-sage/10'
+                    : 'hover:border-sasie-gold/50'
+                } ${
+                  guest.rsvpStatus === 'confirmed' && guest.status === 'not_checked_in'
+                    ? 'border-l-4 border-l-sasie-emerald'
+                    : guest.category === 'VIP'
+                    ? 'border-l-4 border-l-sasie-gold'
+                    : ''
+                }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
+                    {/* Name with VIP badge */}
                     <div className="flex items-center gap-2">
-                      <h3 className={`font-semibold ${guest.status === 'checked_in' ? 'text-sasie-emerald' : 'text-sasie-mocca'} truncate`}>
+                      <h3
+                        className={`font-semibold truncate ${
+                          guest.status === 'checked_in'
+                            ? 'text-sasie-emerald'
+                            : guest.rsvpStatus === 'confirmed'
+                            ? 'text-sasie-mocca'
+                            : 'text-sasie-mocca/70'
+                        }`}
+                      >
                         {guest.name}
                       </h3>
                       {guest.category === 'VIP' && (
@@ -220,28 +355,83 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-sasie-milo/60 mt-1">##{guest.id}</p>
+
+                    {/* ID and Category */}
+                    <p className="text-xs text-sasie-milo/60 mt-1">
+                      ##{guest.id} • {guest.category}
+                    </p>
+
+                    {/* RSVP Status Badge */}
+                    {guest.status === 'not_checked_in' && (
+                      <div className="mt-2">
+                        <span
+                          className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${getRsvpStatusColor(
+                            guest.rsvpStatus
+                          )}`}
+                        >
+                          <span>{getRsvpStatusIcon(guest.rsvpStatus)}</span>
+                          <span>RSVP: {getRsvpStatusText(guest.rsvpStatus)}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {/* RSVP Response Time */}
+                    {guest.rsvpResponseTime && guest.status === 'not_checked_in' && (
+                      <p className="text-xs text-sasie-milo/50 mt-1">
+                        Respon: {new Date(guest.rsvpResponseTime).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
                     {guest.status === 'checked_in' ? (
                       <>
                         <div className="text-center mr-2">
-                          <p className="text-xs text-sasie-emerald">{new Date(guest.checkInTime || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-xs text-sasie-emerald">
+                            {new Date(guest.checkInTime || '').toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-sasie-emerald/20 flex items-center justify-center">
-                          <svg className="w-6 h-6 text-sasie-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          <svg
+                            className="w-6 h-6 text-sasie-emerald"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2.5}
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         </div>
                       </>
                     ) : (
                       <>
-                        <span className={`text-xs px-2 py-1 rounded-full border ${getCategoryColor(guest.category)}`}>
+                        {/* Show category if not checked in */}
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full border ${getCategoryColor(
+                          guest.category
+                        )}`}
+                        >
                           {guest.category}
                         </span>
                         <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center">
-                          <svg className="w-5 h-5 text-sasie-mocca" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg
+                            className="w-5 h-5 text-sasie-mocca"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
                         </div>

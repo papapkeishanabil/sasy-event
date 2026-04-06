@@ -5,6 +5,7 @@ export const useScreen = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
   const [lastScreen, setLastScreen] = useState<Screen>('landing');
   const [successGuest, setSuccessGuest] = useState<{ name: string; category: string } | null>(null);
+  const [rsvpGuestId, setRsvpGuestId] = useState<number | undefined>(undefined);
 
   const navigateTo = useCallback((screen: Screen) => {
     setLastScreen(currentScreen);
@@ -25,6 +26,11 @@ export const useScreen = () => {
     setCurrentScreen('landing');
   }, []);
 
+  const navigateToRsvp = useCallback((guestId: number) => {
+    setRsvpGuestId(guestId);
+    setCurrentScreen('rsvp');
+  }, []);
+
   return {
     currentScreen,
     navigateTo,
@@ -32,5 +38,7 @@ export const useScreen = () => {
     showSuccess,
     closeSuccess,
     successGuest,
+    rsvpGuestId,
+    navigateToRsvp,
   };
 };

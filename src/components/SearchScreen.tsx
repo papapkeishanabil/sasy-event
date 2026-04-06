@@ -3,7 +3,7 @@ import { Guest } from '../types';
 
 interface SearchScreenProps {
   guests: Guest[];
-  onCheckIn: (id: number) => { success: boolean; alreadyCheckedIn: boolean };
+  onCheckIn: (id: number) => Promise<{ success: boolean; alreadyCheckedIn: boolean }>;
   onBack: () => void;
 }
 
@@ -23,8 +23,8 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
     );
   }, [guests, searchQuery]);
 
-  const handleCheckIn = (guest: Guest) => {
-    const result = onCheckIn(guest.id);
+  const handleCheckIn = async (guest: Guest) => {
+    const result = await onCheckIn(guest.id);
 
     if (result.alreadyCheckedIn) {
       setMessage({ type: 'error', text: `${guest.name} sudah check-in sebelumnya` });

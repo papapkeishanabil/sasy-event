@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useGuestData } from './hooks/useGuestData';
 import { useScreen } from './hooks/useScreen';
 
@@ -9,13 +10,29 @@ import OperatorDashboard from './components/OperatorDashboard';
 import SuccessScreen from './components/SuccessScreen';
 import AdminPanel from './components/AdminPanel';
 import StatsBar from './components/StatsBar';
+import RsvpPage from './components/RsvpPage';
+import InvitationBuilder from './components/InvitationBuilder';
 
 function App() {
-  const { guests, stats, checkInGuest, resetAll, importGuests } = useGuestData();
-  const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest } = useScreen();
+  const { guests, stats, checkInGuest, resetAll, importGuests, addGuest, updateGuest, deleteGuest } = useGuestData();
+  const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest, rsvpGuestId, navigateToRsvp } = useScreen();
 
-  const handleCheckIn = (guestId: number) => {
-    const result = checkInGuest(guestId);
+  // Check URL parameters for RSVP access
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const rsvpParam = urlParams.get('rsvp');
+    const guestIdParam = urlParams.get('guestId');
+
+    if (rsvpParam === 'true' && guestIdParam) {
+      const guestId = parseInt(guestIdParam, 10);
+      if (!isNaN(guestId)) {
+        navigateToRsvp(guestId);
+      }
+    }
+  }, [navigateToRsvp]);
+
+  const handleCheckIn = async (guestId: number) => {
+    const result = await checkInGuest(guestId);
     if (result.success) {
       const guest = guests.find(g => g.id === guestId);
       if (guest) {
@@ -72,6 +89,10 @@ function App() {
             onImport={importGuests}
             onReset={resetAll}
             onBack={() => navigateTo('landing')}
+            onInvitationBuilder={() => navigateTo('invitation')}
+            onAddGuest={addGuest}
+            onUpdateGuest={updateGuest}
+            onDeleteGuest={deleteGuest}
           />
         )}
 
@@ -80,6 +101,19 @@ function App() {
             guestName={successGuest.name}
             category={successGuest.category}
             onClose={closeSuccess}
+          />
+        )}
+
+        {currentScreen === 'rsvp' && (
+          <RsvpPage
+            guestId={rsvpGuestId}
+            onBack={() => navigateTo('landing')}
+          />
+        )}
+
+        {currentScreen === 'invitation' && (
+          <InvitationBuilder
+            onBack={() => navigateTo('admin')}
           />
         )}
       </main>

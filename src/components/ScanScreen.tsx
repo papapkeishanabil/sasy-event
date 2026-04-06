@@ -4,12 +4,13 @@ import { Guest } from '../types';
 
 interface ScanScreenProps {
   guests: Guest[];
-  onCheckIn: (id: number) => { success: boolean; alreadyCheckedIn: boolean };
+  onCheckIn: (id: number) => Promise<{ success: boolean; alreadyCheckedIn: boolean }>;
   onBack: () => void;
 }
 
 const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) => {
   const [error, setError] = useState<string>('');
+  const [cameraMode, setCameraMode] = useState<'environment' | 'user'>('environment');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanRegionId = 'scan-region';
 
@@ -29,7 +30,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
         scannerRef.current = scanner;
 
         await scanner.start(
-          { facingMode: 'user' },
+          { facingMode: cameraMode },
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
@@ -41,6 +42,33 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
             // Ignore scan errors (continuous)
           }
         );
+
+        // Apply mirror effect for front camera after scanner starts
+        setTimeout(() => {
+          const scanRegionEl = document.getElementById(scanRegionId);
+          if (scanRegionEl) {
+            // Find video element inside scanner region
+            const videoEl = scanRegionEl.querySelector('video');
+            if (videoEl) {
+              if (cameraMode === 'user') {
+                // Mirror for front camera (like a real mirror)
+                videoEl.style.transform = 'scaleX(-1)';
+              } else {
+                // No mirror for back camera
+                videoEl.style.transform = 'none';
+              }
+            }
+            // Also try to find any canvas or image elements
+            const canvasEl = scanRegionEl.querySelector('canvas');
+            if (canvasEl) {
+              if (cameraMode === 'user') {
+                canvasEl.style.transform = 'scaleX(-1)';
+              } else {
+                canvasEl.style.transform = 'none';
+              }
+            }
+          }
+        }, 1000);
 
         if (isMounted) {
           setError('');
@@ -62,9 +90,9 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
         scannerRef.current = null;
       }
     };
-  }, []);
+  }, [cameraMode]);
 
-  const handleScanSuccess = (decodedText: string) => {
+  const handleScanSuccess = async (decodedText: string) => {
     try {
       // Try to parse as JSON first
       let data: { id: number; name?: string };
@@ -90,7 +118,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
         return;
       }
 
-      const result = onCheckIn(guest.id);
+      const result = await onCheckIn(guest.id);
 
       if (result.alreadyCheckedIn) {
         setError(`${guest.name} is already checked in`);
@@ -133,16 +161,26 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           </svg>
         </button>
         <h2 className="font-cremona text-xl font-cremona gold-text">Scan QR Code</h2>
-        <div className="w-10"></div>
+        <button
+          onClick={() => setCameraMode(cameraMode === 'environment' ? 'user' : 'environment')}
+          className="p-2 rounded-full bg-sasie-cream border border-sasie-gold/30 hover:border-sasie-gold/60 transition-colors"
+          title="Switch Camera"
+        >
+          <svg className="w-6 h-6 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
       </div>
 
       {/* Scanner */}
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="relative w-full max-w-md">
           <div
-            id={scanRegionId}
             className="rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
-          />
+            style={{ transform: cameraMode === 'user' ? 'scaleX(-1)' : 'none' }}
+          >
+            <div id={scanRegionId} />
+          </div>
 
           {/* Scan overlay */}
           <div className="absolute inset-0 pointer-events-none">

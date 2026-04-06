@@ -1,41 +1,104 @@
 import { useState, useEffect } from 'react';
 import { Guest, CheckInStats } from '../types';
-import { getGuests, saveGuests, updateGuestStatus, resetCheckIns, initializeDefaultData } from '../utils/storage';
+import { supabase, isSupabaseConfigured } from '../utils/supabase';
+import {
+  getGuests,
+  saveGuests,
+  updateGuestStatus,
+  resetCheckIns,
+  initializeDefaultData,
+  addGuest as storageAddGuest,
+  updateGuest as storageUpdateGuest,
+  deleteGuest as storageDeleteGuest,
+} from '../utils/storage';
 
 export const useGuestData = () => {
   const [guests, setGuests] = useState<Guest[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Load guests on mount
   useEffect(() => {
-    // Initialize default data if needed and load guests immediately
-    initializeDefaultData();
-    setGuests(getGuests());
+    loadData();
   }, []);
 
-  const checkInGuest = (guestId: number) => {
+  // Real-time sync for Supabase
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const channel = supabase
+      .channel('guests-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'guests' },
+        async (payload: any) => {
+          console.log('Real-time update:', payload);
+          // Reload all guests when changes occur
+          const updated = await getGuests();
+          setGuests(updated);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    await initializeDefaultData();
+    const loaded = await getGuests();
+    setGuests(loaded);
+    setLoading(false);
+  };
+
+  const checkInGuest = async (guestId: number) => {
     const guest = guests.find(g => g.id === guestId);
     if (guest?.status === 'checked_in') {
       return { success: false, alreadyCheckedIn: true };
     }
-    const updated = updateGuestStatus(guestId, 'checked_in');
+    const updated = await updateGuestStatus(guestId, 'checked_in');
     setGuests(updated);
     return { success: true, alreadyCheckedIn: false };
   };
 
-  const undoCheckIn = (guestId: number) => {
-    const updated = updateGuestStatus(guestId, 'not_checked_in');
+  const undoCheckIn = async (guestId: number) => {
+    const updated = await updateGuestStatus(guestId, 'not_checked_in');
     setGuests(updated);
   };
 
-  const resetAll = () => {
+  const resetAll = async () => {
     if (confirm('Are you sure you want to reset all check-ins?')) {
-      const updated = resetCheckIns();
+      const updated = await resetCheckIns();
       setGuests(updated);
     }
   };
 
-  const importGuests = (newGuests: Guest[]) => {
-    saveGuests(newGuests);
+  const importGuests = async (newGuests: Guest[]) => {
+    await saveGuests(newGuests);
     setGuests(newGuests);
+  };
+
+  const addGuest = async (guest: Omit<Guest, 'id'>) => {
+    const updated = await storageAddGuest(guest);
+    setGuests(updated);
+    return updated;
+  };
+
+  const updateGuest = async (guestId: number, updates: Partial<Omit<Guest, 'id'>>) => {
+    const updated = await storageUpdateGuest(guestId, updates);
+    if (updated) {
+      setGuests(updated);
+    }
+    return updated;
+  };
+
+  const deleteGuest = async (guestId: number) => {
+    const updated = await storageDeleteGuest(guestId);
+    if (updated) {
+      setGuests(updated);
+    }
+    return updated;
   };
 
   const stats: CheckInStats = {
@@ -49,9 +112,14 @@ export const useGuestData = () => {
   return {
     guests,
     stats,
+    loading,
     checkInGuest,
     undoCheckIn,
     resetAll,
     importGuests,
+    addGuest,
+    updateGuest,
+    deleteGuest,
+    refreshData: loadData,
   };
 };

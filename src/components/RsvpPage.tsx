@@ -1,0 +1,728 @@
+import { useState, useEffect } from 'react';
+import { Guest, Event } from '../types';
+import { supabase, isSupabaseConfigured } from '../utils/supabase';
+import QRCode from 'qrcode';
+
+interface RsvpPageProps {
+  guestId?: number;
+  onBack?: () => void;
+}
+
+// Default event configuration
+const DEFAULT_EVENT: Event = {
+  id: 'sasie-event-2024',
+  title: 'SASIENALA x WARDAH',
+  description: 'Kami dengan hangat mengundang Anda untuk meluncurkan kolaborasi istimewa bersama Waradah',
+  date: 'Minggu, 14 April 2024',
+  time: '10:00 - 15:00 WIB',
+  location: 'Sasie Nala Boutique',
+  locationLat: -6.2088,
+  locationLng: 106.8456,
+  locationAddress: 'Jl. Kemang Raya No. 123, Jakarta Selatan',
+  imageUrl: '/assets/LOGO SASIENALA 2023 BLACK-3.png'
+};
+
+const EVENT_STORAGE_KEY = 'sasie_event_config';
+
+export default function RsvpPage({ guestId }: RsvpPageProps) {
+  const [guest, setGuest] = useState<Guest | null>(null);
+  const [event, setEvent] = useState<Event>(DEFAULT_EVENT);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [opened, setOpened] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+  const [showDeclined, setShowDeclined] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+
+  useEffect(() => {
+    // Load event data FIRST, then guest data
+    const loadAllData = async () => {
+      await loadEventData();
+      await loadGuestData();
+    };
+    loadAllData();
+  }, [guestId]);
+
+  // Generate QR code when showQr is true and guest exists
+  useEffect(() => {
+    const generateQRCode = async () => {
+      if (showQr && guest && !qrCodeDataUrl) {
+        try {
+          const qrData = JSON.stringify({ id: guest.id, name: guest.name });
+          const qrUrl = await QRCode.toDataURL(qrData, {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: '#8B7355',
+              light: '#FFFFFF'
+            }
+          });
+          setQrCodeDataUrl(qrUrl);
+        } catch (error) {
+          console.error('Error generating QR code:', error);
+        }
+      }
+    };
+    generateQRCode();
+  }, [showQr, guest]);
+
+  const loadEventData = async () => {
+    console.log('=== Loading event data ===');
+
+    // Try loading from Supabase first
+    if (isSupabaseConfigured()) {
+      try {
+        console.log('Fetching from Supabase...');
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', 'default')
+          .single();
+
+        console.log('Supabase response:', { data, error });
+
+        if (data && !error) {
+          const loadedEvent: Event = {
+            id: data.id,
+            title: data.title,
+            description: data.description || '',
+            date: data.date,
+            time: data.time,
+            location: data.location,
+            locationLat: data.location_lat,
+            locationLng: data.location_lng,
+            locationAddress: data.location_address || '',
+            imageUrl: data.image_url || '',
+          };
+          console.log('✅ Loaded event config from Supabase:', loadedEvent);
+          setEvent(loadedEvent);
+          return;
+        }
+      } catch (supabaseError) {
+        console.log('❌ Could not load event from Supabase:', supabaseError);
+      }
+    } else {
+      console.log('⚠️ Supabase not configured');
+    }
+
+    // Try loading from JSON file (for deployed version)
+    try {
+      const response = await fetch('/event-config.json');
+      if (response.ok) {
+        const jsonEvent = await response.json();
+        console.log('Loaded event config from JSON file:', jsonEvent);
+        setEvent(jsonEvent);
+        return;
+      }
+    } catch (jsonError) {
+      console.log('Could not load event-config.json, trying localStorage...');
+    }
+
+    // Fallback to localStorage
+    const eventConfig = localStorage.getItem(EVENT_STORAGE_KEY);
+    console.log('Loading event config from localStorage:', eventConfig);
+
+    if (eventConfig) {
+      const savedEvent = JSON.parse(eventConfig);
+      console.log('Parsed event config:', savedEvent);
+
+      // Merge with defaults to ensure all fields exist
+      const mergedEvent = {
+        ...DEFAULT_EVENT,
+        ...savedEvent
+      };
+
+      console.log('Final event config:', mergedEvent);
+      setEvent(mergedEvent);
+    } else {
+      console.log('No event config found, using default');
+      setEvent(DEFAULT_EVENT);
+    }
+  };
+
+  const loadGuestData = async () => {
+    try {
+      if (guestId) {
+        const { getGuestById } = await import('../utils/storage');
+        const foundGuest = await getGuestById(guestId);
+        setGuest(foundGuest);
+      }
+    } catch (error) {
+      console.error('Error loading guest:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenInvitation = () => {
+    setOpened(true);
+  };
+
+  const handleRsvp = async (status: 'confirmed' | 'declined' | 'maybe') => {
+    if (!guest) return;
+
+    setSubmitting(true);
+    try {
+      const { updateGuestRsvp } = await import('../utils/storage');
+      const updatedGuest = await updateGuestRsvp(guest.id, status);
+
+      if (updatedGuest) {
+        setGuest(updatedGuest);
+
+        if (status === 'confirmed') {
+          // Generate QR Code with guest data
+          const qrData = JSON.stringify({ id: updatedGuest.id, name: updatedGuest.name });
+          const qrUrl = await QRCode.toDataURL(qrData, {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: '#8B7355',
+              light: '#FFFFFF'
+            }
+          });
+          setQrCodeDataUrl(qrUrl);
+          setTimeout(() => setShowQr(true), 500);
+        } else {
+          setTimeout(() => setShowDeclined(true), 500);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving RSVP:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openGoogleMaps = () => {
+    if (event.locationLat && event.locationLng) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${event.locationLat},${event.locationLng}`;
+      window.open(url, '_blank');
+    } else if (event.locationAddress) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.locationAddress)}`;
+      window.open(url, '_blank');
+    }
+  };
+
+  const getRsvpStatusColor = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return 'bg-sasie-emerald/20 text-sasie-emerald border-sasie-emerald/40';
+      case 'declined': return 'bg-sasie-marun/20 text-sasie-marun border-sasie-marun/40';
+      case 'maybe': return 'bg-sasie-gold/20 text-sasie-bronze border-sasie-gold/40';
+      default: return 'bg-sasie-dove/30 text-sasie-milo border-sasie-dove';
+    }
+  };
+
+  const getRsvpStatusText = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return 'Confirmed';
+      case 'declined': return 'Declined';
+      case 'maybe': return 'Maybe';
+      default: return 'Pending';
+    }
+  };
+
+  // Opening Screen
+  if (!opened) {
+    // Show loading state if event data hasn't loaded yet
+    if (event.title === DEFAULT_EVENT.title) {
+      return (
+        <div className="min-h-screen bg-sasie-cream flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-sasie-gold border-t-transparent rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+            <p className="text-sasie-mocca text-sm sm:text-base">Loading...</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-sasie-cream flex items-center justify-center relative overflow-hidden">
+        {/* Floating Orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-12 sm:top-20 left-6 sm:left-10 w-40 h-40 sm:w-64 sm:h-64 bg-sasie-gold/10 rounded-full blur-2xl sm:blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-12 sm:bottom-20 right-6 sm:right-10 w-48 h-48 sm:w-80 sm:h-80 bg-sasie-mocca/10 rounded-full blur-2xl sm:blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-96 sm:h-96 bg-sasie-bronze/5 rounded-full blur-xl sm:blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 text-center px-4 sm:px-6">
+          {/* Logo */}
+          <div className="mb-6 sm:mb-8">
+            {event.imageUrl && (
+              <img
+                src={event.imageUrl}
+                alt="Event"
+                className="h-12 sm:h-16 mx-auto mb-3 sm:mb-4"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  // Try fallback logo
+                  target.src = '/assets/LOGO SASIENALA 2023 BLACK-3.png';
+                }}
+              />
+            )}
+            {!event.imageUrl && (
+              <img
+                src="/assets/LOGO SASIENALA 2023 BLACK-3.png"
+                alt="SASIENALA"
+                className="h-12 sm:h-16 mx-auto mb-3 sm:mb-4"
+              />
+            )}
+            {event.title.includes('×') && (
+              <div className="flex items-center justify-center gap-2 sm:gap-3">
+                <div className="h-px w-8 sm:w-12 bg-sasie-gold/50"></div>
+                <span className="text-sasie-gold text-base sm:text-lg">×</span>
+                <div className="h-px w-8 sm:w-12 bg-sasie-gold/50"></div>
+              </div>
+            )}
+            {/* Show event title */}
+            <p className="text-sasie-mocca text-lg sm:text-xl mt-2 sm:mt-3 font-medium">
+              {event.title.includes('×')
+                ? event.title.split('×')[1]?.trim() || event.title
+                : event.title}
+            </p>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3xl font-light text-sasie-mocca mb-2 tracking-wide">You're Invited</h1>
+          <p className="text-sasie-milo/70 text-xs sm:text-sm mb-8 sm:mb-12 tracking-widest uppercase">Digital Invitation</p>
+
+          {/* Open Button */}
+          <button
+            onClick={handleOpenInvitation}
+            className="group relative px-8 sm:px-12 py-3 sm:py-4 bg-sasie-mocca text-white rounded-xl sm:rounded-2xl font-medium overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+          >
+            <span className="relative z-10 flex items-center gap-2 sm:gap-3">
+              Open Invitation
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-sasie-gold via-sasie-bronze to-sasie-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading State
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-sasie-cream flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-sasie-gold border-t-transparent rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+          <p className="text-sasie-mocca text-sm sm:text-base">Loading invitation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Invitation
+  return (
+    <div className="min-h-screen bg-sasie-cream relative">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sasie-gold/30 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sasie-gold/30 to-transparent"></div>
+      </div>
+
+      {/* Floating Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-24 sm:top-32 right-6 sm:right-10 w-24 h-24 sm:w-32 sm:h-32 bg-sasie-gold/5 rounded-full blur-xl sm:blur-2xl"></div>
+        <div className="absolute bottom-32 sm:bottom-40 left-6 sm:left-10 w-28 h-28 sm:w-40 sm:h-40 bg-sasie-mocca/5 rounded-full blur-xl sm:blur-2xl"></div>
+      </div>
+
+      {/* Content - Responsive */}
+      <div className="relative z-10 mx-auto px-4 py-6 sm:px-6 sm:py-8 md:py-12 max-w-2xl lg:max-w-4xl">
+        {/* Guest Name - MOVED TO TOP */}
+        {guest && (
+          <div className="text-center mb-6 sm:mb-8 animate-slide-up">
+            <p className="text-sasie-milo/70 text-xs sm:text-sm mb-1.5 sm:mb-2">Dear Sassyfriend</p>
+
+            {/* Guest Name - Block display */}
+            <div className="mb-3 sm:mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold relative inline-block">
+                <span className="relative inline-block">
+                  {/* Gold 3D Effect for Guest Name */}
+                  <span className="relative z-10 bg-gradient-to-br from-sasie-gold via-sasie-bronze to-sasie-gold bg-clip-text text-transparent drop-shadow-lg"
+                        style={{
+                          WebkitTextStroke: '0.5px rgba(201, 168, 108, 0.2)',
+                          textShadow: '0 1px 2px rgba(201, 168, 108, 0.2), 0 2px 4px rgba(201, 168, 108, 0.1)',
+                          filter: 'drop-shadow(0 1px 1px rgba(201, 168, 108, 0.3))'
+                        }}>
+                    {guest.name}
+                  </span>
+                  {/* Shimmer overlay */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer rounded"
+                        style={{
+                          backgroundSize: '200% 100%',
+                          animation: 'shimmer 3s ease-in-out infinite'
+                        }}>
+                  </span>
+                </span>
+              </h2>
+            </div>
+
+            {/* Badges below name - Separate row */}
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border bg-white/50">
+              {/* Category badge (VIP first if VIP) */}
+              <span className="text-sasie-mocca text-[10px] sm:text-xs font-medium">{guest.category}</span>
+              <span className="text-sasie-milo text-[10px] sm:text-xs">•</span>
+              <span className={`text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full ${getRsvpStatusColor(guest.rsvpStatus)}`}>
+                {getRsvpStatusText(guest.rsvpStatus)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Header */}
+        <header className="text-center mb-8 sm:mb-12 animate-fade-in">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-sasie-gold/50 to-transparent"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-sasie-gold"></div>
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-sasie-gold/50 to-transparent"></div>
+          </div>
+
+          <p className="text-sasie-milo/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-sasie-mocca tracking-wide">
+            {event.title}
+          </h1>
+          <p className="text-sasie-milo text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">{event.description || 'Launch Event'}</p>
+
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-sasie-gold/50 to-transparent"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-sasie-gold"></div>
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-sasie-gold/50 to-transparent"></div>
+          </div>
+        </header>
+
+        {/* Event Details */}
+        <section className="bg-white/60 backdrop-blur-sm rounded-2xl border border-sasie-dove p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="space-y-3 sm:space-y-5">
+            {/* Date */}
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sasie-gold/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-sasie-milo/70 uppercase tracking-wider mb-0.5">Date</p>
+                <p className="text-sm sm:text-base text-sasie-mocca font-medium">{event.date}</p>
+              </div>
+            </div>
+
+            {/* Time */}
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sasie-gold/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-sasie-milo/70 uppercase tracking-wider mb-0.5">Time</p>
+                <p className="text-sm sm:text-base text-sasie-mocca font-medium">{event.time}</p>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sasie-gold/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-sasie-milo/70 uppercase tracking-wider mb-0.5">Location</p>
+                <p className="text-sm sm:text-base text-sasie-mocca font-medium">{event.location}</p>
+                {event.locationAddress && (
+                  <p className="text-sasie-milo/70 text-xs sm:text-sm mt-0.5">{event.locationAddress}</p>
+                )}
+                <button
+                  onClick={openGoogleMaps}
+                  className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-sasie-gold hover:text-sasie-bronze transition"
+                >
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Open in Google Maps
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Special Guest Experience */}
+        <section className="bg-white/60 backdrop-blur-sm rounded-2xl border border-sasie-dove p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <h3 className="text-sm font-semibold text-sasie-mocca mb-3 sm:mb-4">As our special guest, you will experience:</h3>
+          <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-sasie-milo">
+            <div className="flex items-start gap-2">
+              <span>✨</span>
+              <p><strong className="text-sasie-mocca">Interactive Booth Experience</strong><br/>Discover your true color and explore your personal style<br/>with Sasienala & Wardah Beauty</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span>✨</span>
+              <p><strong className="text-sasie-mocca">Talk Show Session: Find Your Color</strong><br/>
+                – Personal Color Analysis Demo by Wardah<br/>
+                – Body Shape Analysis by Sasienala</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span>✨</span>
+              <p><strong className="text-sasie-mocca">Exclusive First Look</strong><br/>Laras Raya Collection by Sasienala</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span>✨</span>
+              <p><strong>Curated Goodie Bag</strong></p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span>✨</span>
+              <p><strong>Food & Beverages</strong></p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span>✨</span>
+              <p><strong>Games & Special Surprises</strong></p>
+            </div>
+            <div className="flex items-start gap-2 mt-2 pt-2 border-t border-sasie-dove/50">
+              <span>🎁</span>
+              <p><strong className="text-sasie-mocca">A little something special:</strong><br/>
+              A chance to win a <strong>Wardah Personal Color Analysis Ticket</strong><br/>
+              — thoughtfully prepared for our guests</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Dress Code */}
+        <section className="bg-gradient-to-br from-sasie-gold/10 to-sasie-bronze/10 backdrop-blur-sm rounded-2xl border border-sasie-gold/30 p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+          <h3 className="text-sm font-semibold text-sasie-mocca mb-2">Dress Code:</h3>
+          <p className="text-xs sm:text-sm text-sasie-milo/70 mb-2">Your Personal Palette</p>
+          <p className="text-xs sm:text-sm text-sasie-mocca">Come dressed in any color that makes you feel confident!</p>
+          <div className="mt-2 pt-2 border-t border-sasie-gold/20">
+            <p className="text-[10px] sm:text-xs text-sasie-marun/80"><strong>Exclusions:</strong> Please refrain from wearing Black, Soft Pink, Soft Salmon, or Burgundy for this special occasion.</p>
+          </div>
+        </section>
+
+        {/* RSVP Section - Hide if already responded */}
+        {guest && !guest.rsvpStatus && !showQr && !showDeclined && (
+          <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+            {/* Label */}
+            <div className="text-center mb-4 sm:mb-6">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="h-px w-8 sm:w-12 bg-sasie-gold/40"></div>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-gold" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <div className="h-px w-8 sm:w-12 bg-sasie-gold/40"></div>
+              </div>
+              <p className="text-sasie-mocca font-medium text-sm">Kindly confirm your attendance through the link below</p>
+            </div>
+
+            {/* Yes Button - Shiny Gold */}
+            <button
+              onClick={() => handleRsvp('confirmed')}
+              disabled={submitting}
+              className="group relative w-full mb-2.5 sm:mb-3 overflow-hidden"
+            >
+              {/* Shimmer Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
+
+              {/* Gold Gradient Background */}
+              <div className="relative overflow-hidden rounded-xl sm:rounded-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-sasie-gold via-sasie-bronze to-sasie-gold bg-[length:200%_100%]"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent"></div>
+
+                {/* Button Content */}
+                <div className="relative py-3.5 sm:py-5 px-4 sm:px-6 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 group-hover:scale-[1.02]">
+                  {/* Icon Circle */}
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/40">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+
+                  {/* Text */}
+                  <div className="text-left">
+                    <p className="text-white font-semibold text-sm sm:text-base">Yes, I'll attend</p>
+                    <p className="text-white/80 text-xs">Looking forward to it</p>
+                  </div>
+
+                  {/* Arrow */}
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Glow Effect */}
+              <div className="absolute -inset-0.5 sm:-inset-1 bg-gradient-to-r from-sasie-gold/40 via-sasie-gold/20 to-sasie-gold/40 rounded-xl sm:rounded-2xl blur-lg sm:blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+            </button>
+
+            {/* No Button - Elegant Muted */}
+            <button
+              onClick={() => handleRsvp('declined')}
+              disabled={submitting}
+              className="group relative w-full overflow-hidden"
+            >
+              <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-sasie-dove hover:border-sasie-milo/50 transition-all duration-300">
+                {/* Subtle shimmer */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-sasie-milo/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+                {/* Button Content */}
+                <div className="relative py-3.5 sm:py-5 px-4 sm:px-6 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 group-hover:scale-[1.02]">
+                  {/* Icon Circle */}
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-sasie-marun/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-marun" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+
+                  {/* Text */}
+                  <div className="text-left">
+                    <p className="text-sasie-mocca font-semibold text-sm sm:text-base">Sorry, can't make it</p>
+                    <p className="text-sasie-milo/70 text-xs">I'll catch you next time</p>
+                  </div>
+
+                  {/* Arrow */}
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sasie-milo/40 ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+
+            {/* Submitting State */}
+            {submitting && (
+              <div className="mt-4 sm:mt-6 text-center">
+                <div className="relative inline-flex items-center justify-center">
+                  {/* Outer ring */}
+                  <div className="absolute inset-0 rounded-full bg-sasie-gold/20 animate-ping"></div>
+                  {/* Spinner */}
+                  <div className="relative w-8 h-8 sm:w-10 sm:h-10 border-3 border-sasie-gold/30 border-t-sasie-gold rounded-full animate-spin"></div>
+                </div>
+                <p className="text-sasie-milo/70 text-xs sm:text-sm mt-2 sm:mt-3 animate-pulse">Saving your response...</p>
+              </div>
+            )}
+
+            {/* Closing Message */}
+            <div className="mt-6 sm:mt-8 text-center">
+              <p className="text-sasie-milo/70 text-xs sm:text-sm italic leading-relaxed">
+                We hope this event becomes a space for you<br/>
+                to pause, to connect, and to rediscover your own colors—<br/>
+                in the most genuine and meaningful way.
+              </p>
+              <p className="text-sasie-milo/70 text-xs sm:text-sm italic mt-3 sm:mt-4">We would be truly delighted to have you with us.</p>
+              <div className="mt-3 sm:mt-4">
+                <p className="text-sasie-milo/60 text-sm sm:text-base italic">With love,</p>
+                <img
+                  src="https://mrkjatwshfnldnfutuov.supabase.co/storage/v1/object/sign/Images/SASIENALA%20Logo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wYTlmYTQxNi0wNjUzLTRiNDYtYWRmZS04MzQyYzRhOWU0NzgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJJbWFnZXMvU0FTSUVOQUxBIExvZ28ucG5nIiwiaWF0IjoxNzc1Mjg0OTkxLCJleHAiOjE4MDY4MjA5OTF9.pSVaamOOTj2bQ942w-ISI35W-q0RmYrvKjuRC3uQV6U"
+                  alt="Sasienala"
+                  className="h-12 sm:h-16 mx-auto mt-2 sm:mt-3 object-contain"
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* QR Code Section - Show after confirmation */}
+        {showQr && guest && (
+          <section className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-sasie-emerald/30 p-5 sm:p-6 md:p-8 text-center animate-scale-in">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-sasie-emerald/20 flex items-center justify-center">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-sasie-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-sasie-mocca mb-2">You're Confirmed!</h3>
+            <p className="text-sasie-milo/70 text-xs sm:text-sm mb-4 sm:mb-6">Show this QR code at the entrance</p>
+
+            {/* QR Code Display */}
+            <div className="bg-white rounded-xl p-3 sm:p-4 inline-block mb-3 sm:mb-4 shadow-inner">
+              {qrCodeDataUrl ? (
+                <img
+                  src={qrCodeDataUrl}
+                  alt="QR Code"
+                  className="w-36 h-36 sm:w-48 sm:h-48 rounded-lg"
+                />
+              ) : (
+                <div className="w-36 h-36 sm:w-48 sm:h-48 bg-sasie-cream rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-sasie-gold border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+
+            <p className="text-sasie-mocca font-medium mb-1 text-sm sm:text-base">{guest.name}</p>
+            <p className="text-sasie-milo/60 text-xs">Guest ID: {guest.id}</p>
+
+            <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6 justify-center">
+              <button
+                onClick={() => {
+                  if (qrCodeDataUrl) {
+                    const link = document.createElement('a');
+                    link.href = qrCodeDataUrl;
+                    link.download = `QR-${guest?.name || 'guest'}-${guest?.id}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }
+                }}
+                className="px-3 py-2 sm:px-4 sm:py-2 bg-sasie-mocca hover:bg-sasie-brown text-white rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 sm:gap-2"
+              >
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+              </button>
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'My Invitation QR Code',
+                      text: `QR Code for ${event.title}`,
+                    });
+                  }
+                }}
+                className="px-3 py-2 sm:px-4 sm:py-2 bg-white border border-sasie-dove hover:border-sasie-mocca text-sasie-mocca rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 sm:gap-2"
+              >
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Declined Section */}
+        {showDeclined && (
+          <section className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-sasie-marun/30 p-5 sm:p-6 md:p-8 text-center animate-scale-in">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-sasie-marun/20 flex items-center justify-center">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-sasie-marun" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-sasie-mocca mb-2">Response Recorded</h3>
+            <p className="text-sasie-milo/70 text-sm sm:text-base">We're sorry you can't make it. We hope to see you at our next event!</p>
+          </section>
+        )}
+
+        {/* Already Responded (from previous visit) */}
+        {guest && guest.rsvpStatus && !showQr && !showDeclined && (
+          <section className="bg-white/80 backdrop-blur-sm rounded-2xl border border-sasie-dove p-5 sm:p-6 md:p-8 text-center">
+            <p className="text-sasie-milo/70 text-sm sm:text-base">You've already responded.</p>
+            <p className="text-sasie-mocca font-medium mt-2">Status: <span className={`px-2 py-1 rounded-full text-xs ${getRsvpStatusColor(guest.rsvpStatus)}`}>{getRsvpStatusText(guest.rsvpStatus)}</span></p>
+            {guest.rsvpStatus === 'confirmed' && (
+              <button
+                onClick={() => setShowQr(true)}
+                className="mt-3 sm:mt-4 px-4 sm:px-6 py-2 bg-sasie-mocca hover:bg-sasie-brown text-white rounded-xl text-xs sm:text-sm font-medium transition"
+              >
+                View My QR Code
+              </button>
+            )}
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-8 sm:mt-12 text-center animate-fade-in">
+          <p className="text-sasie-milo/40 text-[10px] sm:text-xs">© 2024 SASIENALA × WARDAH</p>
+        </footer>
+      </div>
+    </div>
+  );
+}
