@@ -394,74 +394,112 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </div>
         </header>
 
-        {/* Event Details */}
+        {/* Event Details - Circular Hub Style */}
         <section className="mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {/* Date Card - More Prominent */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-sasie-gold via-sasie-bronze to-amber-600 rounded-2xl p-4 sm:p-6 shadow-lg">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-xs text-white/70 uppercase tracking-wider">Save the Date</span>
-                </div>
-                <p className="text-white font-bold text-lg sm:text-xl">{event.date}</p>
-              </div>
-            </div>
+          <div className="relative">
+            {/* Central Hub - Large Event Icon */}
+            <div className="flex justify-center mb-6 sm:mb-8">
+              <div className="relative">
+                {/* Rotating decorative rings */}
+                <div className="absolute inset-0 rounded-full border-2 border-dashed border-sasie-gold/30 animate-spin" style={{ animationDuration: '20s' }}></div>
+                <div className="absolute inset-2 rounded-full border border-sasie-bronze/20"></div>
+                <div className="absolute -inset-4 rounded-full border border-sasie-gold/10"></div>
 
-            {/* Time Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-sasie-milo via-sasie-mocca to-sasie-marun rounded-2xl p-4 sm:p-6 shadow-lg">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-xs text-white/70 uppercase tracking-wider">Time</span>
-                </div>
-                <p className="text-white font-bold text-lg sm:text-xl">{event.time}</p>
-              </div>
-            </div>
-
-            {/* Location Card - Full Width */}
-            <div className="md:col-span-2 bg-white rounded-2xl p-4 sm:p-6 shadow-md border border-sasie-gold/20">
-              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                {/* Location Icon */}
-                <div className="flex-shrink-0">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-sasie-gold/20 to-sasie-bronze/20 flex items-center justify-center">
-                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                {/* Central Icon */}
+                <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-sasie-gold via-sasie-bronze to-amber-600 shadow-2xl flex items-center justify-center">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-white to-sasie-cream flex items-center justify-center">
+                    <svg className="w-12 h-12 sm:w-16 sm:h-16 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                   </div>
                 </div>
 
-                {/* Location Info */}
-                <div className="flex-1">
-                  <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-1">Location</p>
-                  <p className="text-base sm:text-lg font-semibold text-sasie-mocca mb-1">{event.location}</p>
-                  {event.locationAddress && (
-                    <p className="text-sm text-sasie-milo/70 mb-3">{event.locationAddress}</p>
-                  )}
-
-                  {/* Google Maps Button - More Prominent */}
-                  <button
-                    onClick={openGoogleMaps}
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-sasie-gold to-sasie-bronze text-white px-4 py-2.5 rounded-xl font-medium text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                    <span>Open in Google Maps</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+                {/* Floating elements around hub */}
+                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-sasie-gold/20 flex items-center justify-center animate-bounce">
+                  <span className="text-lg">✨</span>
+                </div>
+                <div className="absolute -bottom-1 -left-3 w-10 h-10 rounded-full bg-sasie-bronze/20 flex items-center justify-center animate-pulse">
+                  <span className="text-xl">📍</span>
                 </div>
               </div>
+            </div>
+
+            {/* Event Info Cards Arranged Around Hub */}
+            <div className="space-y-3 sm:space-y-4">
+              {/* Date - Top Card */}
+              <div className="relative bg-white rounded-2xl p-4 shadow-md border-l-4 border-sasie-gold hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sasie-gold/20 to-sasie-gold/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-0.5">Date</p>
+                    <p className="text-base sm:text-lg font-semibold text-sasie-mocca">{event.date}</p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-sasie-gold/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time - Middle Card */}
+              <div className="relative bg-white rounded-2xl p-4 shadow-md border-l-4 border-sasie-milo hover:shadow-lg transition-shadow">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sasie-milo/20 to-sasie-milo/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-sasie-milo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-0.5">Time</p>
+                    <p className="text-base sm:text-lg font-semibold text-sasie-mocca">{event.time}</p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-sasie-milo/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-sasie-milo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location - Bottom Card (Full Width) */}
+              <div className="relative bg-gradient-to-r from-white to-sasie-cream rounded-2xl p-4 shadow-md border-l-4 border-sasie-marun hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sasie-marun/20 to-sasie-marun/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-sasie-marun" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-sasie-milo/60 uppercase tracking-wider mb-0.5">Location</p>
+                    <p className="text-base sm:text-lg font-semibold text-sasie-mocca mb-1">{event.location}</p>
+                    {event.locationAddress && (
+                      <p className="text-sm text-sasie-milo/70 mb-2">{event.locationAddress}</p>
+                    )}
+                    <button
+                      onClick={openGoogleMaps}
+                      className="inline-flex items-center gap-2 text-sasie-gold hover:text-sasie-bronze font-medium text-sm transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      <span>Open in Google Maps</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Connecting lines to hub */}
+            <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none">
+              <div className="absolute top-8 left-1/2 w-px h-16 bg-gradient-to-b from-sasie-gold/30 to-transparent -translate-x-1/2"></div>
+              <div className="absolute top-1/2 left-8 w-16 h-px bg-gradient-to-r from-sasie-milo/30 to-transparent -translate-y-1/2"></div>
+              <div className="absolute bottom-16 left-1/2 w-px h-12 bg-gradient-to-t from-sasie-marun/30 to-transparent -translate-x-1/2"></div>
             </div>
           </div>
         </section>
