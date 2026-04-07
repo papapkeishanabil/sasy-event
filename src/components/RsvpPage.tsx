@@ -276,51 +276,45 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             {/* Show event title - simplified */}
             {(() => {
               const title = event.title;
-              const hasColorOfUs = /color\s*of\s*us/i.test(title);
 
-              if (hasColorOfUs) {
-                // Extract prefix (part before "Color Of Us")
-                let prefix = '';
-                const colonIndex = title.indexOf(':');
-                const dashIndex = title.indexOf('-');
+              // Extract brand name (part before "Color Of Us" or separator)
+              let brandName = title;
+              const colonIndex = title.indexOf(':');
+              const dashIndex = title.indexOf('-');
 
-                if (colonIndex > -1) {
-                  prefix = title.substring(0, colonIndex).trim();
-                } else if (dashIndex > -1) {
-                  prefix = title.substring(0, dashIndex).trim();
-                }
-
-                return (
-                  <div className="flex flex-col items-center gap-1 sm:gap-2">
-                    {prefix && (
-                      <p className="text-mahogany-brown text-base sm:text-lg mt-2 sm:mt-3 font-medium">
-                        {prefix}
-                      </p>
-                    )}
-                    <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight"
-                       style={{
-                         fontFamily: "'Dancing Script', cursive",
-                         fontWeight: '300',
-                         background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
-                         backgroundSize: '200% 200%',
-                         WebkitBackgroundClip: 'text',
-                         WebkitTextFillColor: 'transparent',
-                         backgroundClip: 'text',
-                         WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
-                         textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
-                         filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
-                         animation: 'shimmer 6s ease-in-out infinite'
-                       }}>
-                      Color Of Us
-                    </p>
-                  </div>
-                );
+              if (colonIndex > -1) {
+                brandName = title.substring(0, colonIndex).trim();
+              } else if (dashIndex > -1) {
+                brandName = title.substring(0, dashIndex).trim();
               }
 
+              // Remove "Color Of Us" from brand name if present
+              brandName = brandName.replace(/color\s*of\s*us/gi, '').trim();
+
               return (
-                <p className="text-mahogany-brown text-lg sm:text-xl mt-2 sm:mt-3 font-medium">
-                  {title.includes('×') ? title.split('×')[1]?.trim() || title : title}
-                </p>
+                <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                  {brandName && brandName.length > 2 && (
+                    <p className="text-mahogany-brown text-base sm:text-lg font-semibold">
+                      {brandName}
+                    </p>
+                  )}
+                  <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight"
+                     style={{
+                       fontFamily: "'Dancing Script', cursive",
+                       fontWeight: '300',
+                       background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
+                       backgroundSize: '200% 200%',
+                       WebkitBackgroundClip: 'text',
+                       WebkitTextFillColor: 'transparent',
+                       backgroundClip: 'text',
+                       WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
+                       textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
+                       filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
+                       animation: 'shimmer 6s ease-in-out infinite'
+                     }}>
+                    Color Of Us
+                  </p>
+                </div>
               );
             })()}
           </div>
