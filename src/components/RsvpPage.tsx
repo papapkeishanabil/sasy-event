@@ -1,3 +1,5 @@
+paddingBottom: '1em',
+                       overflow: 'visible',
 import { useState, useEffect } from 'react';
 import { Guest, Event } from '../types';
 import { supabase, isSupabaseConfigured } from '../utils/supabase';
