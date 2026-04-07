@@ -293,12 +293,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
               return (
                 <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                  {brandName && brandName.length > 2 && (
-                    <p className="text-mahogany-brown text-base sm:text-lg font-semibold">
-                      {brandName}
-                    </p>
-                  )}
-                  <p className="color-of-us-text text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight"
+                  <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight"
                      style={{
                        fontFamily: "'Dancing Script', cursive",
                        fontWeight: '300',

@@ -73,7 +73,13 @@
       "Bash(vercel ls:*)",
       "Bash(vercel logs:*)",
       "Bash(vercel --prod --force)",
-      "Bash(start font-preview.html)"
+      "Bash(start font-preview.html)",
+      "Read(//d/PROJECTS/**)",
+      "Bash(sed -i \"s/PaddingBottom: '0.5em',/paddingBottom: '1em',/g\" src/components/RsvpPage.tsx)",
+      "Bash(sed:*)",
+      "Bash(bash fix-padding.sh)",
+      "Bash(bash:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
