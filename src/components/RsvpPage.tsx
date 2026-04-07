@@ -322,24 +322,6 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           {/* Title */}
           <h1 className="font-elegant text-2xl sm:text-3xl font-light text-mahogany-brown mb-2 tracking-wide">You're Invited</h1>
 
-          {/* Color Of Us - Same gradient as guest name */}
-          <p className="color-of-us-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-tight mb-3 sm:mb-4 -mt-1 relative"
-             style={{
-               fontFamily: "'Dancing Script', cursive",
-               fontWeight: '300',
-               background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
-               backgroundSize: '200% 200%',
-               WebkitBackgroundClip: 'text',
-               WebkitTextFillColor: 'transparent',
-               backgroundClip: 'text',
-               WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
-               textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
-               filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
-               animation: 'shimmer 6s ease-in-out infinite'
-             }}>
-            Color Of Us
-          </p>
-
           <p className="text-sage-green/70 text-xs sm:text-sm mb-8 sm:mb-12 tracking-widest uppercase">Digital Invitation</p>
 
           {/* Open Button */}
