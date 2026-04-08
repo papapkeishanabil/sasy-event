@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Download QR Code - SASIENALA × WARDAH</title>
+  <title>Download QR Code - SASIENALA : Color Of Us</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * {
@@ -37,15 +40,22 @@
       letter-spacing: 2px;
     }
     .subtitle {
-      font-size: 14px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       color: #D4AF37;
       margin-bottom: 24px;
-      letter-spacing: 1px;
+      line-height: 1;
     }
     .guest-name {
-      font-size: 20px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px;
       font-weight: 600;
-      color: #8B7355;
+      color: #D4AF37;
       margin-bottom: 8px;
     }
     .guest-info {
@@ -223,6 +233,8 @@
 
       // Update DOM first with QR container
       document.getElementById('content').innerHTML = `
+        <div class="logo">SASIENALA</div>
+        <div class="subtitle">Color Of Us</div>
         <div class="guest-name">${guest.name}</div>
         <div class="guest-info">${guest.category || 'Regular'} • ID: #${guest.id}</div>
         <div class="qr-container">
@@ -242,8 +254,7 @@
         </button>
         <div class="footer">
           QR Code ini untuk check-in di acara<br>
-          SASIENALA × WARDAH<br>
-          <small style="color: #888;">Tips: Long press on QR Code to save directly</small>
+          SASIENALA : Color Of Us
         </div>
       `;
 
