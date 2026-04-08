@@ -261,10 +261,27 @@
       const qrImg = document.querySelector('#qrcode img');
       if (!qrImg) return;
 
-      const link = document.createElement('a');
-      link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
-      link.href = qrImg.src;
-      link.click();
+      // Convert data URL to Blob for better cross-platform compatibility
+      fetch(qrImg.src)
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(err => {
+          console.error('Download failed:', err);
+          // Fallback to direct download
+          const link = document.createElement('a');
+          link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
+          link.href = qrImg.src;
+          link.click();
+        });
     }
   </script>
 </body>
