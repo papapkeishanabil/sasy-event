@@ -608,10 +608,19 @@ export const updateGuestsCategory = async (
   oldCategoryName: string,
   newCategoryName: string
 ): Promise<void> => {
-  const guests = await getGuests();
-  const guestsToUpdate = guests.filter(g => g.category === oldCategoryName);
+  console.log('updateGuestsCategory called:', { oldCategoryName, newCategoryName });
 
-  if (guestsToUpdate.length === 0) return;
+  const guests = await getGuests();
+  console.log('Total guests:', guests.length);
+
+  const guestsToUpdate = guests.filter(g => g.category === oldCategoryName);
+  console.log('Guests to update:', guestsToUpdate.length);
+
+  if (guestsToUpdate.length === 0) {
+    console.log('No guests found with category:', oldCategoryName);
+    console.log('Available categories:', [...new Set(guests.map(g => g.category))]);
+    return;
+  }
 
   // Update local storage
   const storageKey = 'sasie_guests';
@@ -622,17 +631,24 @@ export const updateGuestsCategory = async (
       g.category === oldCategoryName ? { ...g, category: newCategoryName } : g
     );
     localStorage.setItem(storageKey, JSON.stringify(updatedGuests));
+    console.log('Local storage updated');
   }
 
   // Update Supabase
   if (isSupabaseConfigured()) {
     try {
-      const { error } = await supabase
+      console.log('Updating Supabase...');
+      const { error, data } = await supabase
         .from('guests')
         .update({ category: newCategoryName })
-        .eq('category', oldCategoryName);
+        .eq('category', oldCategoryName)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      console.log('Supabase updated successfully, rows affected:', data?.length || 0);
     } catch (error) {
       console.error('Error updating guest categories in Supabase:', error);
       throw error;

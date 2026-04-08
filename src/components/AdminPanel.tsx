@@ -394,16 +394,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       const oldCategory = categories.find(c => c.id === editingCategory.id);
       const oldName = oldCategory?.name;
 
+      console.log('Updating category:', { id: editingCategory.id, oldName, newName: categoryFormData.name });
+
       const updated = await updateCategory(editingCategory.id, categoryFormData);
       if (updated) {
         setCategories(updated);
 
         // Update all guests with the old category name
         if (oldName && categoryFormData.name && oldName !== categoryFormData.name) {
-          await updateGuestsCategory(oldName, categoryFormData.name);
-          // Refresh guest list via parent
-          const refreshedGuests = await getGuests();
-          onImport(refreshedGuests);
+          console.log('Updating guests from', oldName, 'to', categoryFormData.name);
+          try {
+            await updateGuestsCategory(oldName, categoryFormData.name);
+            console.log('Guest categories updated successfully');
+            // Refresh guest list via parent
+            const refreshedGuests = await getGuests();
+            onImport(refreshedGuests);
+          } catch (err) {
+            console.error('Failed to update guest categories:', err);
+          }
         }
 
         setSuccessMessage('Kategori berhasil diupdate!');
@@ -412,6 +420,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         setEditingCategory(null);
       }
     } catch (error) {
+      console.error('Error updating category:', error);
       setError('Gagal mengupdate kategori');
     }
   };
