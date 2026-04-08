@@ -79,7 +79,16 @@
       "Bash(sed:*)",
       "Bash(bash fix-padding.sh)",
       "Bash(bash:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(node -e \"const fs=require\\('fs'\\);let f='src/components/RsvpPage.tsx';let c=fs.readFileSync\\(f,'utf8'\\);c=c.replace\\(/animation: 'shimmer 6s ease-in-out infinite',\\\\\"animation: 'shimmer 6s ease-in-out infinite\\\\\",\\\\\\\\n                       paddingBottom: '1em',\\\\\\\\n                       overflow: 'visible',\\\\n\\);fs.writeFileSync\\(f,c\\);\")",
+      "Bash(node:*)",
+      "Bash(git checkout:*)",
+      "Bash(rm -f fix-padding.sh fix-id-column.sql update-event-title.sql mockup-improved.html redirect.html)",
+      "Bash(ls *.sh *.sql *.html)",
+      "Bash(where vercel:*)",
+      "Bash(grep \"mobile-text-boost\" dist/assets/*.css)",
+      "Bash(cat dist/assets/*.css)",
+      "Bash(vercel:*)"
     ]
   }
 }

@@ -1,5 +1,3 @@
-paddingBottom: '1em',
-                       overflow: 'visible',
 import { useState, useEffect } from 'react';
 import { Guest, Event } from '../types';
 import { supabase, isSupabaseConfigured } from '../utils/supabase';
@@ -172,7 +170,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         setGuest(updatedGuest);
 
         if (status === 'confirmed') {
-          // Generate QR Code with guest data
+          // Generate QR Code with guest data (stored but NOT displayed)
           const qrData = JSON.stringify({ id: updatedGuest.id, name: updatedGuest.name });
           const qrUrl = await QRCode.toDataURL(qrData, {
             width: 300,
@@ -307,7 +305,9 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                        WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
                        textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
                        filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
-                       animation: 'shimmer 6s ease-in-out infinite'
+                       animation: 'shimmer 6s ease-in-out infinite',
+                       paddingBottom: '1em',
+                       overflow: 'visible'
                      }}>
                     Color Of Us
                   </p>
@@ -371,18 +371,20 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         {/* Guest Name - MOVED TO TOP */}
         {guest && (
           <div className="text-center mb-6 sm:mb-8 animate-slide-up">
-            <p className="font-elegant italic text-sage-green/70 text-xs sm:text-sm mb-1.5 sm:mb-2">Dear Sassyfriend</p>
+            <p className="font-elegant italic text-sage-green/70 text-sm sm:text-base mb-2 sm:mb-3" style={{ fontSize: 'min(1rem, 4vw)' }}>Dear Sassyfriend</p>
 
             {/* Guest Name - Block display */}
-            <div className="mb-3 sm:mb-4">
-              <h2 className="guest-name font-elegant text-xl sm:text-2xl md:text-3xl font-semibold relative inline-block">
+            <div className="mb-4 sm:mb-5">
+              <h2 className="guest-name font-dancing text-2xl sm:text-3xl md:text-4xl font-semibold relative inline-block"
+                  style={{ fontSize: 'min(2.8rem, 9vw)' }}>
                 <span className="relative inline-block">
                   {/* Gold 3D Effect for Guest Name */}
-                  <span className="relative z-10 bg-gradient-to-br from-champagne-gold via-mahogany-brown to-champagne-gold bg-clip-text text-transparent drop-shadow-lg"
+                  <span className="relative z-10 bg-gradient-to-br from-champagne-gold via-mahogany-brown to-champagne-gold bg-clip-text text-transparent drop-shadow-lg font-dancing"
                         style={{
                           WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
                           textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
-                          filter: 'drop-shadow(0 1px 1px rgba(212, 175, 55, 0.3))'
+                          filter: 'drop-shadow(0 1px 1px rgba(212, 175, 55, 0.3))',
+                          fontFamily: "'Dancing Script', cursive !important"
                         }}>
                     {guest.name}
                   </span>
@@ -398,11 +400,12 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             </div>
 
             {/* Badges below name - Separate row */}
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border bg-cream-ivory/60 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full border bg-cream-ivory/60 backdrop-blur-sm">
               {/* Category badge (VIP first if VIP) */}
-              <span className="text-mahogany-brown text-[10px] sm:text-xs font-medium">{guest.category}</span>
-              <span className="text-sage-green text-[10px] sm:text-xs">•</span>
-              <span className={`text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full ${getRsvpStatusColor(guest.rsvpStatus)}`}>
+              <span className="text-mahogany-brown text-xs sm:text-sm font-medium" style={{ fontSize: 'min(0.85rem, 3.5vw)' }}>{guest.category}</span>
+              <span className="text-sage-green text-xs sm:text-sm">•</span>
+              <span className={`text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-0.5 rounded-full ${getRsvpStatusColor(guest.rsvpStatus)}`}
+                    style={{ fontSize: 'min(0.85rem, 3.5vw)' }}>
                 {getRsvpStatusText(guest.rsvpStatus)}
               </span>
             </div>
@@ -417,10 +420,12 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-champagne-gold/50 to-transparent"></div>
           </div>
 
-          <p className="font-elegant text-sage-green/70 text-xs sm:text-sm tracking-widest uppercase mb-2 sm:mb-3">You Are Invited To</p>
+          <p className="font-elegant text-sage-green/70 text-base sm:text-lg tracking-widest uppercase mb-4 sm:mb-5"
+             style={{ fontSize: 'min(1rem, 3.5vw)' }}>You Are Invited To</p>
 
           {/* Event Title - remove Color Of Us if already present */}
-          <h1 className="event-title font-elegant text-base sm:text-lg md:text-xl font-semibold text-mahogany-brown tracking-wide mb-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-mahogany-brown tracking-wide mb-4 sasienala-title mobile-text-boost-lg"
+              style={{ fontSize: 'min(2rem, 6vw)' }}>
             {(() => {
               const title = event.title;
               /* Remove all Color Of Us variations - be more aggressive */
@@ -441,7 +446,30 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
             })()}
           </h1>
 
-          <p className="text-sage-green text-xs sm:text-sm mt-1.5 sm:mt-2 whitespace-pre-line">
+          {/* Color Of Us - Dancing Script with shimmer effect */}
+          <p
+            className="color-of-us-text text-5xl sm:text-6xl md:text-7xl font-light leading-tight my-5 sm:my-6 mobile-text-boost-xl"
+            style={{
+              fontSize: 'min(3rem, 10vw)',
+              fontFamily: "'Dancing Script', cursive",
+              fontWeight: '300',
+              background: 'linear-gradient(to bottom right, #D4AF37, #8B4513, #D4AF37)',
+              backgroundSize: '200% 200%',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              WebkitTextStroke: '0.5px rgba(212, 175, 55, 0.2)',
+              textShadow: '0 1px 2px rgba(212, 175, 55, 0.2), 0 2px 4px rgba(212, 175, 55, 0.1)',
+              filter: 'drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5))',
+              animation: 'shimmer 6s ease-in-out infinite',
+              paddingBottom: '0.5em'
+            }}
+          >
+            Color Of Us
+          </p>
+
+          <p className="text-sage-green text-sm sm:text-base mt-2 sm:mt-3 whitespace-pre-line font-normal"
+             style={{ fontSize: 'min(1rem, 4vw)' }}>
             {(() => {
               const desc = event.description || 'Launch Event';
               /* Remove event title and Color Of Us from description */
@@ -471,8 +499,8 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-sage-green/70 uppercase tracking-wider mb-0.5">Date</p>
-                <p className="text-sm sm:text-base text-mahogany-brown font-medium">{event.date}</p>
+                <p className="text-sage-green/70 uppercase tracking-wider mb-1.5" style={{ fontSize: 'min(0.75rem, 3vw)' }}>Date</p>
+                <p className="text-mahogany-brown font-medium" style={{ fontSize: 'min(1rem, 4vw)' }}>{event.date}</p>
               </div>
             </div>
 
@@ -484,8 +512,8 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-sage-green/70 uppercase tracking-wider mb-0.5">Time</p>
-                <p className="text-sm sm:text-base text-mahogany-brown font-medium">{event.time}</p>
+                <p className="text-sage-green/70 uppercase tracking-wider mb-1.5" style={{ fontSize: 'min(0.75rem, 3vw)' }}>Time</p>
+                <p className="text-mahogany-brown font-medium" style={{ fontSize: 'min(1rem, 4vw)' }}>{event.time}</p>
               </div>
             </div>
 
@@ -498,14 +526,15 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-xs text-sage-green/70 uppercase tracking-wider mb-0.5">Location</p>
-                <p className="text-sm sm:text-base text-mahogany-brown font-medium">{event.location}</p>
+                <p className="text-sage-green/70 uppercase tracking-wider mb-1.5" style={{ fontSize: 'min(0.75rem, 3vw)' }}>Location</p>
+                <p className="text-mahogany-brown font-medium" style={{ fontSize: 'min(1rem, 4vw)' }}>{event.location}</p>
                 {event.locationAddress && (
-                  <p className="text-sage-green/70 text-xs sm:text-sm mt-0.5">{event.locationAddress}</p>
+                  <p className="text-sage-green/70 mt-1.5" style={{ fontSize: 'min(0.9rem, 3.5vw)' }}>{event.locationAddress}</p>
                 )}
                 <button
                   onClick={openGoogleMaps}
-                  className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-champagne-gold hover:text-champagne-gold-dark transition"
+                  className="mt-3 sm:mt-4 inline-flex items-center gap-2 sm:gap-2.5 text-champagne-gold hover:text-champagne-gold-dark transition"
+                  style={{ fontSize: 'min(0.85rem, 3.3vw)' }}
                 >
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -519,36 +548,37 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
         {/* Special Guest Experience */}
         <section className="bg-cream-ivory/70 backdrop-blur-sm rounded-2xl border border-blush-pink-dark/20 p-4 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <h3 className="font-elegant text-sm font-semibold text-mahogany-brown mb-3 sm:mb-4">As our special guest, you will experience:</h3>
-          <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-sage-green">
+          <h3 className="font-semibold text-mahogany-brown mb-4 sm:mb-6"
+              style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 'min(1rem, 3.8vw)' }}>As our special guest, you will experience:</h3>
+          <div className="space-y-3 sm:space-y-4 text-sage-green" style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>
             <div className="flex items-start gap-2">
-              <span>✨</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>✨</span>
               <p><strong className="text-mahogany-brown">Interactive Booth Experience</strong><br/>Discover your true color and explore your personal style<br/>with Sasienala & Wardah Beauty</p>
             </div>
             <div className="flex items-start gap-2">
-              <span>✨</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>✨</span>
               <p><strong className="text-mahogany-brown">Talk Show Session: Find Your Color</strong><br/>
                 – Personal Color Analysis Demo by Wardah<br/>
                 – Body Shape Analysis by Sasienala</p>
             </div>
             <div className="flex items-start gap-2">
-              <span>✨</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>✨</span>
               <p><strong className="text-mahogany-brown">Exclusive First Look</strong><br/>Laras Raya Collection by Sasienala</p>
             </div>
             <div className="flex items-start gap-2">
-              <span>✨</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>✨</span>
               <p><strong>Curated Goodie Bag</strong></p>
             </div>
             <div className="flex items-start gap-2">
-              <span>✨</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>✨</span>
               <p><strong>Food & Beverages</strong></p>
             </div>
             <div className="flex items-start gap-2">
-              <span>✨</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>✨</span>
               <p><strong>Games & Special Surprises</strong></p>
             </div>
             <div className="flex items-start gap-2 mt-2 pt-2 border-t border-blush-pink-dark/30">
-              <span>🎁</span>
+              <span style={{ fontSize: 'min(0.9rem, 3.3vw)' }}>🎁</span>
               <p><strong className="text-mahogany-brown">A little something special:</strong><br/>
               A chance to win a <strong>Wardah Personal Color Analysis Ticket</strong><br/>
               — thoughtfully prepared for our guests</p>
@@ -566,61 +596,209 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
               </svg>
             </div>
             <div>
-              <h3 className="font-elegant text-sm font-semibold text-mahogany-brown">Dress Code</h3>
-              <p className="text-xs text-sage-green/70">Your Personal Palette</p>
+              <h3 className="font-semibold text-mahogany-brown" style={{ fontSize: 'min(1rem, 3.8vw)' }}>Dress Code</h3>
+              <p className="text-sage-green/70" style={{ fontSize: 'min(0.7rem, 2.8vw)' }}>Your Personal Palette</p>
             </div>
           </div>
 
           {/* Main Message */}
-          <div className="bg-gradient-to-r from-blush-pink-light to-cream-ivory rounded-xl p-4 mb-4 shadow-sm border border-blush-pink-dark/20">
-            <p className="text-sm text-mahogany-brown text-center">
+          <div className="bg-gradient-to-r from-blush-pink-light to-cream-ivory rounded-xl p-3 sm:p-4 mb-4 shadow-sm border border-blush-pink-dark/20">
+            <p className="text-mahogany-brown text-center" style={{ fontSize: 'min(0.85rem, 3.2vw)' }}>
               ✨ Come dressed in any color that makes you feel confident! ✨
             </p>
           </div>
 
-          {/* Color Palette Showcase */}
-          <div className="bg-cream-ivory rounded-xl p-4 shadow-sm border border-champagne-gold/20 mb-4">
-            <p className="text-xs font-medium text-sage-green/80 mb-3 text-center">Express Your True Colors</p>
-            <div className="flex justify-center gap-2 flex-wrap">
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-rose-600 shadow-md mb-1"></div>
-                <span className="text-[9px] text-sage-green/60">Rose</span>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-md mb-1"></div>
-                <span className="text-[9px] text-sage-green/60">Amber</span>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-md mb-1"></div>
-                <span className="text-[9px] text-sage-green/60">Emerald</span>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 shadow-md mb-1"></div>
-                <span className="text-[9px] text-sage-green/60">Sky</span>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 shadow-md mb-1"></div>
-                <span className="text-[9px] text-sage-green/60">Violet</span>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-md mb-1"></div>
-                <span className="text-[9px] text-sage-green/60">Orange</span>
-              </div>
+          {/* Exclusions - Hand-drawn Style Circles (Organic, Imperfect Shapes) */}
+          <div className="bg-gradient-to-r from-dusty-rose/10 to-blush-pink/30 rounded-xl p-3 sm:p-4 border border-dusty-rose/20">
+            <div className="flex items-start gap-2 mb-3 sm:mb-4">
+              <span style={{ fontSize: 'min(1rem, 3.5vw)' }}>💝</span>
+              <h3 className="font-semibold text-mahogany-brown" style={{ fontSize: 'min(1rem, 3.8vw)' }}>Kindly Avoid:</h3>
             </div>
-          </div>
 
-          {/* Exclusions - More Gentle Design */}
-          <div className="bg-gradient-to-r from-dusty-rose/10 to-blush-pink/30 rounded-xl p-3 border border-dusty-rose/20">
-            <div className="flex items-start gap-2">
-              <span className="text-lg">💝</span>
-              <div>
-                <p className="text-xs font-medium text-mahogany-brown mb-1">Kindly Avoid:</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-black text-white text-[9px] rounded-full">Black</span>
-                  <span className="px-2 py-1 bg-pink-200 text-pink-800 text-[9px] rounded-full">Soft Pink</span>
-                  <span className="px-2 py-1 bg-orange-200 text-orange-800 text-[9px] rounded-full">Soft Salmon</span>
-                  <span className="px-2 py-1 bg-red-800 text-white text-[9px] rounded-full">Burgundy</span>
-                </div>
+            {/* Hand-drawn style color circles - organic, imperfect shapes with icons */}
+            <div className="flex justify-around items-center gap-3">
+              {/* Black - with wobbly edges and slight asymmetry */}
+              <div className="flex flex-col items-center gap-2">
+                {/* Shoe Icon - Stylized high heel shoe */}
+                <svg width="28" height="28" viewBox="0 0 24 24" className="mb-1 opacity-80">
+                  <path
+                    d="M4 17c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-1H4v1zm3.5-9l-1-1.5c-.3-.5-.2-1.1.3-1.4l.5-.3c.5-.3 1.1-.2 1.4.3L11 7l5-3c.6-.4 1.4-.2 1.8.4l.8 1.2c.4.6.2 1.4-.4 1.8L12 12l-1.5 3c-.3.6-1 .8-1.6.5l-.5-.3c-.6-.3-.8-1-.5-1.6l1-2-2-1z"
+                    fill="#666666"
+                    stroke="#444444"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <svg width="64" height="64" viewBox="0 0 70 70" className="drop-shadow-md">
+                  <path
+                    d="M35 4
+                       C42 4.5, 51 7, 58 11
+                       C65.5 15.5, 67.5 23, 68 31
+                       C68.5 39, 66 46.5, 60 54
+                       C54 61.5, 45 65, 37 65.5
+                       C29 66, 21 63, 14 57
+                       C7 51, 4.5 43, 4 35
+                       C3.5 27, 6 19, 12 12
+                       C18 5, 26 4, 35 4Z"
+                    fill="#1a1a1a"
+                    stroke="#0d0d0d"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'url(#handDrawnTexture1)',
+                      transform: 'rotate(-2deg)',
+                      transformOrigin: 'center'
+                    }}
+                  />
+                  <defs>
+                    <filter id="handDrawnTexture1" x="-25%" y="-25%" width="150%" height="150%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="3" seed="1" result="noise"/>
+                      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+                      <feGaussianBlur stdDeviation="0.3"/>
+                    </filter>
+                  </defs>
+                </svg>
+                <span className="text-[10px] sm:text-xs font-medium text-gray-700">Hitam</span>
+              </div>
+
+              {/* Soft Pink - squishy, organic shape */}
+              <div className="flex flex-col items-center gap-2">
+                {/* Hanger Icon - Clothing hanger */}
+                <svg width="28" height="28" viewBox="0 0 24 24" className="mb-1 opacity-80">
+                  <path
+                    d="M12 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6l-6 3v2l6-3 6 3v-2l-6-3z"
+                    fill="#FFA0B0"
+                    stroke="#E89AA5"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <svg width="64" height="64" viewBox="0 0 70 70" className="drop-shadow-md">
+                  <path
+                    d="M35 2.5
+                       C44 2.8, 53 6, 60 14
+                       C66 21, 67 29, 66.5 35
+                       C66 42, 63 50, 57 58
+                       C50 66, 42 67, 35 66.8
+                       C27 66.5, 18 63, 11.5 56
+                       C5 49, 3 40, 3.5 35
+                       C4 28, 7 20, 13 13
+                       C19 5.5, 27 2.5, 35 2.5Z"
+                    fill="#FFB6C1"
+                    stroke="#FFA0B0"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'url(#handDrawnTexture2)',
+                      transform: 'rotate(1.5deg) scale(1.02, 0.98)',
+                      transformOrigin: 'center'
+                    }}
+                  />
+                  <defs>
+                    <filter id="handDrawnTexture2" x="-25%" y="-25%" width="150%" height="150%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="4" seed="2" result="noise"/>
+                      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+                      <feGaussianBlur stdDeviation="0.4"/>
+                    </filter>
+                  </defs>
+                </svg>
+                <span className="text-[10px] sm:text-xs font-medium text-gray-700">Soft Pink</span>
+              </div>
+
+              {/* Salmon - stretched oval with wobbly edge */}
+              <div className="flex flex-col items-center gap-2">
+                {/* Sparkle Icon - Starburst/sparkle */}
+                <svg width="28" height="28" viewBox="0 0 24 24" className="mb-1 opacity-80">
+                  <path
+                    d="M12 2l2 4 4 2-4 2-2 4-2-4-4-2 4-2zm0 14l1.5 3 3 1.5-3 1.5L12 24l-1.5-3-3-1.5 3-1.5zm-8-7l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"
+                    fill="#E57266"
+                    stroke="#D46054"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <svg width="64" height="64" viewBox="0 0 70 70" className="drop-shadow-md">
+                  <path
+                    d="M35 3
+                       C43 3.5, 51 7, 57 13
+                       C63 19, 65.5 27, 65 35
+                       C64.5 43, 61 50, 56 57
+                       C50 63, 42 65, 35 65.5
+                       C27 66, 19 63, 13 57
+                       C7 51, 4.5 43, 5 35
+                       C5.5 27, 8 19, 14 13
+                       C20 6, 27 3, 35 3Z"
+                    fill="#FA8072"
+                    stroke="#E57266"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'url(#handDrawnTexture3)',
+                      transform: 'rotate(-1deg) scale(1.03, 0.97)',
+                      transformOrigin: 'center'
+                    }}
+                  />
+                  <defs>
+                    <filter id="handDrawnTexture3" x="-25%" y="-25%" width="150%" height="150%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.075" numOctaves="3" seed="3" result="noise"/>
+                      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.8" xChannelSelector="R" yChannelSelector="G"/>
+                      <feGaussianBlur stdDeviation="0.35"/>
+                    </filter>
+                  </defs>
+                </svg>
+                <span className="text-[10px] sm:text-xs font-medium text-gray-700">Salmon</span>
+              </div>
+
+              {/* Burgundy - lopsided, tilted shape */}
+              <div className="flex flex-col items-center gap-2">
+                {/* Sparkle Icon - Starburst/sparkle */}
+                <svg width="28" height="28" viewBox="0 0 24 24" className="mb-1 opacity-80">
+                  <path
+                    d="M12 2l2 4 4 2-4 2-2 4-2-4-4-2 4-2zm0 14l1.5 3 3 1.5-3 1.5L12 24l-1.5-3-3-1.5 3-1.5zm-8-7l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"
+                    fill="#A03040"
+                    stroke="#8A2838"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <svg width="64" height="64" viewBox="0 0 70 70" className="drop-shadow-md">
+                  <path
+                    d="M35 4
+                       C44 4.2, 52 8, 58 15
+                       C64 22, 65 30, 64.5 35
+                       C64 41, 61 49, 55 56
+                       C48 63, 40 65, 35 65
+                       C28 65, 20 62, 14 56
+                       C8 50, 5.5 42, 6 35
+                       C6.5 28, 9 20, 15 14
+                       C21 7, 28 4, 35 4Z"
+                    fill="#800020"
+                    stroke="#6A001A"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      filter: 'url(#handDrawnTexture4)',
+                      transform: 'rotate(2.5deg) scale(0.98, 1.02)',
+                      transformOrigin: 'center'
+                    }}
+                  />
+                  <defs>
+                    <filter id="handDrawnTexture4" x="-25%" y="-25%" width="150%" height="150%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.085" numOctaves="4" seed="4" result="noise"/>
+                      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.2" xChannelSelector="R" yChannelSelector="G"/>
+                      <feGaussianBlur stdDeviation="0.3"/>
+                    </filter>
+                  </defs>
+                </svg>
+                <span className="text-[10px] sm:text-xs font-medium text-gray-700">Burgundy</span>
               </div>
             </div>
           </div>
@@ -638,7 +816,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 </svg>
                 <div className="h-px w-8 sm:w-12 bg-champagne-gold/40"></div>
               </div>
-              <p className="text-mahogany-brown font-medium text-sm">Kindly confirm your attendance through the button below</p>
+              <p className="text-mahogany-brown font-medium" style={{ fontSize: 'min(0.8rem, 3vw)' }}>Kindly confirm your attendance through the button below</p>
             </div>
 
             {/* Yes Button - Shiny Gold */}
@@ -656,22 +834,22 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent"></div>
 
                 {/* Button Content */}
-                <div className="relative py-3.5 sm:py-5 px-4 sm:px-6 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 group-hover:scale-[1.02]">
+                <div className="relative py-3 sm:py-4 px-3 sm:px-5 flex items-center justify-center gap-2 transition-all duration-300 group-hover:scale-[1.02]">
                   {/* Icon Circle */}
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/40">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/40">
+                    <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
 
                   {/* Text */}
                   <div className="text-left">
-                    <p className="text-white font-semibold text-sm sm:text-base">I would be delighted to attend</p>
-                    <p className="text-white/80 text-xs">I look forward to seeing you</p>
+                    <p className="text-white font-semibold" style={{ fontSize: 'min(0.95rem, 3.5vw)' }}>I would be delighted to attend</p>
+                    <p className="text-white/80" style={{ fontSize: 'min(0.75rem, 2.8vw)' }}>I look forward to seeing you</p>
                   </div>
 
                   {/* Arrow */}
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/60 ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-white/60 ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -692,22 +870,22 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-sage-green/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
                 {/* Button Content */}
-                <div className="relative py-3.5 sm:py-5 px-4 sm:px-6 flex items-center justify-center gap-2 sm:gap-3 transition-all duration-300 group-hover:scale-[1.02]">
+                <div className="relative py-3 sm:py-4 px-3 sm:px-5 flex items-center justify-center gap-2 transition-all duration-300 group-hover:scale-[1.02]">
                   {/* Icon Circle */}
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-dusty-rose/10 flex items-center justify-center">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-mahogany-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-dusty-rose/10 flex items-center justify-center">
+                    <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-mahogany-brown" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </div>
 
                   {/* Text */}
                   <div className="text-left">
-                    <p className="text-mahogany-brown font-semibold text-sm sm:text-base">I regret that I am unable to attend</p>
-                    <p className="text-sage-green/70 text-xs">I hope to have the opportunity to meet in the future</p>
+                    <p className="text-mahogany-brown font-semibold" style={{ fontSize: 'min(0.95rem, 3.5vw)' }}>I regret that I am unable to attend</p>
+                    <p className="text-sage-green/70" style={{ fontSize: 'min(0.75rem, 2.8vw)' }}>I hope to have the opportunity to meet in the future</p>
                   </div>
 
                   {/* Arrow */}
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sage-green/40 ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-sage-green/40 ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -729,14 +907,14 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
             {/* Closing Message */}
             <div className="mt-6 sm:mt-8 text-center">
-              <p className="text-sage-green/70 text-xs sm:text-sm italic leading-relaxed">
+              <p className="text-sage-green/70 italic leading-relaxed" style={{ fontSize: 'min(0.75rem, 2.8vw)' }}>
                 We hope this event becomes a space for you<br/>
                 to pause, to connect, and to rediscover your own colors—<br/>
                 in the most genuine and meaningful way.
               </p>
-              <p className="text-sage-green/70 text-xs sm:text-sm italic mt-3 sm:mt-4">We would be truly delighted to have you with us.</p>
+              <p className="text-sage-green/70 italic mt-3 sm:mt-4" style={{ fontSize: 'min(0.75rem, 2.8vw)' }}>We would be truly delighted to have you with us.</p>
               <div className="mt-3 sm:mt-4">
-                <p className="text-sage-green/60 text-sm sm:text-base italic">With love,</p>
+                <p className="text-sage-green/60 italic" style={{ fontSize: 'min(0.8rem, 3vw)' }}>With love,</p>
                 <img
                   src="https://mrkjatwshfnldnfutuov.supabase.co/storage/v1/object/sign/Images/SASIENALA%20Logo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wYTlmYTQxNi0wNjUzLTRiNDYtYWRmZS04MzQyYzRhOWU0NzgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJJbWFnZXMvU0FTSUVOQUxBIExvZ28ucG5nIiwiaWF0IjoxNzc1Mjg0OTkxLCJleHAiOjE4MDY4MjA5OTF9.pSVaamOOTj2bQ942w-ISI35W-q0RmYrvKjuRC3uQV6U"
                   alt="Sasienala"
@@ -796,12 +974,36 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
                 Download
               </button>
               <button
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({
-                      title: 'My Invitation QR Code',
-                      text: `QR Code for ${event.title}`,
-                    });
+                onClick={async () => {
+                  if (qrCodeDataUrl) {
+                    try {
+                      // Convert data URL to blob
+                      const response = await fetch(qrCodeDataUrl);
+                      const blob = await response.blob();
+                      const file = new File([blob], `QR-${guest?.name || 'guest'}.png`, { type: 'image/png' });
+
+                      // Check if device supports sharing files
+                      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                          title: `${guest?.name}'s Invitation QR Code`,
+                          text: `My QR code for ${event.title}`,
+                          files: [file]
+                        });
+                      } else if (navigator.share) {
+                        // Fallback: share without file
+                        await navigator.share({
+                          title: `${guest?.name}'s Invitation`,
+                          text: `I've confirmed my attendance for ${event.title}! Here's my Guest ID: ${guest?.id}`,
+                          url: window.location.href
+                        });
+                      } else {
+                        // Fallback: copy to clipboard or show message
+                        alert('Sharing is not supported on this device. Please download the QR code instead.');
+                      }
+                    } catch (error) {
+                      console.error('Error sharing:', error);
+                      // User cancelled or error occurred
+                    }
                   }
                 }}
                 className="px-3 py-2 sm:px-4 sm:py-2 bg-white border border-blush-pink-dark/30 hover:border-mahogany-brown text-mahogany-brown rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 sm:gap-2"
@@ -846,7 +1048,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
         {/* Footer */}
         <footer className="mt-8 sm:mt-12 text-center animate-fade-in">
-          <p className="text-sage-green/40 text-[10px] sm:text-xs">© 2024 SASIENALA × WARDAH</p>
+          <p className="text-sage-green/40 text-[10px] sm:text-xs">© 2026 SASIENALA</p>
         </footer>
       </div>
     </div>

@@ -6,18 +6,29 @@
   * {
     border-color: theme('colors.blush-pink-dark');
   }
+  html {
+    font-size: 16px;
+  }
+  @media (max-width: 640px) {
+    html {
+      font-size: 20px; /* Increase base font size on mobile */
+    }
+  }
   body {
     @apply text-mahogany-brown;
     font-family: 'Work Sans', sans-serif;
     background: linear-gradient(135deg, #F8E8E8 0%, #FCF0F0 50%, #FFFEF9 100%);
     min-height: 100vh;
+    font-size: 1rem;
   }
   /* IMPORTANT: Dancing Script for "Color Of Us" branding - must override everything */
   .color-of-us-text,
   .font-dancing,
   p.color-of-us-text,
   span.color-of-us-text,
-  div.color-of-us-text {
+  div.color-of-us-text,
+  h2.font-dancing,
+  .guest-name.font-dancing {
     font-family: 'Dancing Script', cursive !important;
   }
 
@@ -28,10 +39,26 @@
   }
 
   /* Elegant font for headings */
-  h1, h2, h3, h4, h5, h6,
+  h1, h2, h4, h5, h6,
   .font-elegant, .heading-text,
-  .event-title, .guest-name {
+  .guest-name {
     font-family: 'Playfair Display', serif !important;
+  }
+  /* Guest name with Dancing Script font - override Playfair Display */
+  .guest-name.font-dancing {
+    font-family: 'Dancing Script', cursive !important;
+  }
+  /* h3 uses Work Sans */
+  h3 {
+    font-family: 'Work Sans', sans-serif !important;
+  }
+  /* Event title uses Cormorant Garamond */
+  .event-title {
+    font-family: 'Cormorant Garamond', serif !important;
+  }
+  /* SASIENALA title - same as description */
+  .sasienala-title {
+    font-family: 'Work Sans', sans-serif !important;
   }
   /* Work Sans for body text - EXCEPT special branded text */
   p:not(.color-of-us-text):not(.font-dancing),
@@ -272,5 +299,21 @@
   }
   100% {
     opacity: 1;
+  }
+}
+
+/* Mobile font size boost - explicit override */
+@media (max-width: 640px) {
+  .mobile-text-boost {
+    font-size: 1.5rem !important;
+    line-height: 1.4 !important;
+  }
+  .mobile-text-boost-lg {
+    font-size: 2rem !important;
+    line-height: 1.3 !important;
+  }
+  .mobile-text-boost-xl {
+    font-size: 2.5rem !important;
+    line-height: 1.2 !important;
   }
 }

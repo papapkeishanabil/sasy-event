@@ -57,8 +57,22 @@ export const useGuestData = () => {
     if (guest?.status === 'checked_in') {
       return { success: false, alreadyCheckedIn: true };
     }
+    // Update status to checked_in AND mark as invitation sent
     const updated = await updateGuestStatus(guestId, 'checked_in');
-    setGuests(updated);
+    if (updated) {
+      // Also mark as invitation sent since they checked in
+      const guestWithInvitation = updated.find(g => g.id === guestId);
+      if (guestWithInvitation && !guestWithInvitation.invitationSent) {
+        const now = new Date().toISOString();
+        await storageUpdateGuest(guestId, {
+          invitationSent: true,
+          invitationSentTime: now
+        });
+        // Reload to get the updated guest
+        const reloaded = await getGuests();
+        setGuests(reloaded);
+      }
+    }
     return { success: true, alreadyCheckedIn: false };
   };
 

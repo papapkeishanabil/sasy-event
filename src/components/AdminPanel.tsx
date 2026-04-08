@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Guest, CheckInStats, Category } from '../types';
 import { parseCSV, downloadCSV } from '../utils/csvParser';
-import { generateQRPdf } from '../utils/qrGenerator';
+import { generateQRPdf, generateQRCode } from '../utils/qrGenerator';
 import { clearAllData, getCategories, addCategory, updateCategory, deleteCategory } from '../utils/storage';
 
 interface AdminPanelProps {
@@ -11,7 +11,7 @@ interface AdminPanelProps {
   onReset: () => void;
   onBack: () => void;
   onInvitationBuilder?: () => void;
-  onAddGuest?: (guest: Omit<Guest, 'id'>) => void;
+  onAddGuest?: (guest: Omit<Guest, 'id'>) => Promise<Guest[]>;
   onUpdateGuest?: (guestId: number, updates: Partial<Omit<Guest, 'id'>>) => void;
   onDeleteGuest?: (guestId: number) => void;
 }
@@ -37,6 +37,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Invitation tracking filter
+  const [invitationFilter, setInvitationFilter] = useState<'all' | 'not_sent' | 'sent'>('all');
+  // QR Code Modal state
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrModalGuest, setQrModalGuest] = useState<Guest | null>(null);
+  const [qrModalDataUrl, setQrModalDataUrl] = useState<string | null>(null);
 
   // Category management state
   const [categories, setCategories] = useState<Category[]>([]);
@@ -144,21 +150,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  const handleAddGuest = () => {
+  const handleAddGuest = async () => {
     if (!formData.name.trim()) {
       setError('Nama tamu wajib diisi');
       return;
     }
 
     if (onAddGuest) {
-      onAddGuest({
+      // onAddGuest returns the updated guests array
+      const updatedGuests = await onAddGuest({
         ...formData,
         status: 'not_checked_in'
       });
-      setSuccessMessage('Tamu berhasil ditambahkan!');
-      setTimeout(() => setSuccessMessage(''), 2000);
-      resetForm();
-      setCurrentView('guests');
+
+      // Find the newly added guest by finding guest with highest ID
+      const maxId = Math.max(...updatedGuests.map(g => g.id));
+      const addedGuest = updatedGuests.find(g => g.id === maxId);
+
+      if (addedGuest) {
+        // Generate QR code
+        const qrDataUrl = await generateQRCode(addedGuest);
+        setQrModalGuest(addedGuest);
+        setQrModalDataUrl(qrDataUrl);
+        setShowQRModal(true);
+      } else {
+        // Fallback: show success and go to guest list
+        setSuccessMessage('Tamu berhasil ditambahkan!');
+        setTimeout(() => setSuccessMessage(''), 2000);
+        resetForm();
+        setCurrentView('guests');
+      }
     }
   };
 
@@ -184,6 +205,160 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         setSuccessMessage('Tamu berhasil dihapus!');
         setTimeout(() => setSuccessMessage(''), 2000);
       }
+    }
+  };
+
+  // QR Code Modal handlers
+  const handleDownloadQR = () => {
+    if (qrModalGuest && qrModalDataUrl) {
+      const link = document.createElement('a');
+      link.href = qrModalDataUrl;
+      link.download = `qr_${qrModalGuest.id}_${qrModalGuest.name.replace(/\s+/g, '_')}.png`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  };
+
+  const handlePrintQR = () => {
+    if (qrModalGuest && qrModalDataUrl) {
+      const printWindow = window.open('', '', 'width=400,height=600');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>QR Code - ${qrModalGuest.name}</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                margin: 0;
+              }
+              .qr-container {
+                text-align: center;
+                padding: 20px;
+                border: 2px solid #D4AF37;
+                border-radius: 10px;
+              }
+              .qr-image {
+                width: 300px;
+                height: 300px;
+                margin: 20px 0;
+              }
+              .guest-name {
+                font-size: 24px;
+                font-weight: bold;
+                margin: 10px 0;
+                color: #333;
+              }
+              .guest-category {
+                font-size: 16px;
+                color: #8B7355;
+                margin-bottom: 5px;
+              }
+              .guest-id {
+                font-size: 14px;
+                color: #999;
+              }
+              .event-name {
+                font-size: 12px;
+                color: #D4AF37;
+                margin-top: 20px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="qr-container">
+              <h2 class="guest-name">${qrModalGuest.name}</h2>
+              <p class="guest-category">${qrModalGuest.category}</p>
+              <img src="${qrModalDataUrl}" class="qr-image" alt="QR Code" />
+              <p class="guest-id">ID: #${qrModalGuest.id}</p>
+              <p class="event-name">SASIENALA × WARDAH</p>
+            </div>
+          </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
+  const handleCloseQRModal = () => {
+    setShowQRModal(false);
+    setQrModalGuest(null);
+    setQrModalDataUrl(null);
+    setCurrentView('guests');
+  };
+
+  // Show QR modal for existing guest
+  const handleShowQRForGuest = async (guest: Guest) => {
+    try {
+      const qrDataUrl = await generateQRCode(guest);
+      setQrModalGuest(guest);
+      setQrModalDataUrl(qrDataUrl);
+      setShowQRModal(true);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      setError('Gagal generate QR Code');
+    }
+  };
+
+  // Share invitation link for guest
+  const handleShareInvitation = async (guest: Guest) => {
+    const inviteUrl = `${window.location.origin}?rsvp=true&guestId=${guest.id}`;
+    const shareText = `Halo ${guest.name},\n\nAnda diundang ke acara spesial SASIENALA × WARDAH!\n\nSilakan konfirmasi kehadiran Anda melalui link berikut:\n${inviteUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Undangan SASIENALA × WARDAH',
+          text: shareText,
+          url: inviteUrl
+        });
+      } catch (error) {
+        // User cancelled or error
+        console.log('Share cancelled or failed:', error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(inviteUrl).then(() => {
+        setSuccessMessage('Link undangan disalin ke clipboard!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }).catch(() => {
+        setError('Gagal menyalin link');
+      });
+    }
+  };
+
+  // Share QR download link for guest
+  const handleShareQRDownloadLink = async (guest: Guest) => {
+    const qrDownloadUrl = `${window.location.origin}qr-download.html?id=${guest.id}`;
+    const shareText = `Halo ${guest.name},\n\nBerikut link untuk download QR Code check-in acara SASIENALA × WARDAH:\n${qrDownloadUrl}\n\nSilakan download dan simpan QR Code Anda untuk check-in di acara.`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'QR Code Check-in - SASIENALA × WARDAH',
+          text: shareText,
+          url: qrDownloadUrl
+        });
+      } catch (error) {
+        // User cancelled or error
+        console.log('Share cancelled or failed:', error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(qrDownloadUrl).then(() => {
+        setSuccessMessage('Link download QR disalin ke clipboard!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }).catch(() => {
+        setError('Gagal menyalin link');
+      });
     }
   };
 
@@ -267,10 +442,109 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setCurrentView('edit-guest');
   };
 
-  const filteredGuests = guests.filter(guest =>
-    guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    guest.id.toString().includes(searchQuery)
-  );
+  const handleMarkInvitationSent = async (guest: Guest) => {
+    if (onUpdateGuest) {
+      const now = new Date().toISOString();
+      await onUpdateGuest(guest.id, {
+        invitationSent: !guest.invitationSent,
+        invitationSentTime: guest.invitationSent ? undefined : now
+      });
+      setSuccessMessage(guest.invitationSent
+        ? `Undangan untuk ${guest.name} ditandai sebagai belum dikirim`
+        : `Undangan untuk ${guest.name} ditandai sebagai sudah dikirim`
+      );
+      setTimeout(() => setSuccessMessage(''), 3000);
+    }
+  };
+
+  const filteredGuests = guests.filter(guest => {
+    // Search filter
+    const matchesSearch = searchQuery === '' ||
+      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      guest.id.toString().includes(searchQuery);
+
+    // Invitation filter
+    const matchesInvitation = invitationFilter === 'all' ||
+      (invitationFilter === 'sent' && guest.invitationSent) ||
+      (invitationFilter === 'not_sent' && !guest.invitationSent);
+
+    return matchesSearch && matchesInvitation;
+  });
+
+  // Calculate invitation stats
+  const invitationsNotSent = guests.filter(g => !g.invitationSent).length;
+  const invitationsSent = guests.filter(g => g.invitationSent).length;
+
+  // QR Code Modal - Show this FIRST before any other view
+  if (showQRModal && qrModalGuest && qrModalDataUrl) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fade-in">
+          {/* Header */}
+          <div className="text-center mb-4">
+            <div className="w-12 h-12 bg-sasie-emerald/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-sasie-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-sasie-mocca">Tamu Berhasil Ditambahkan!</h3>
+            <p className="text-sm text-sasie-milo/70">QR Code siap untuk digunakan</p>
+          </div>
+
+          {/* QR Code */}
+          <div className="bg-gradient-to-br from-sasie-cream to-sasie-dove/30 rounded-xl p-4 mb-4 border border-sasie-gold/30">
+            <div className="bg-white rounded-lg p-4 shadow-inner">
+              <img src={qrModalDataUrl} alt="QR Code" className="w-full aspect-square" />
+            </div>
+            <div className="text-center mt-3">
+              <p className="font-semibold text-sasie-mocca">{qrModalGuest.name}</p>
+              <p className="text-sm text-sasie-milo/70">{qrModalGuest.category} • ID: #{qrModalGuest.id}</p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            <button
+              onClick={handleDownloadQR}
+              className="w-full py-3 px-4 rounded-xl bg-sasie-gold hover:bg-sasie-gold/90 text-white font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download QR Code
+            </button>
+
+            <button
+              onClick={() => qrModalGuest && handleShareQRDownloadLink(qrModalGuest)}
+              className="w-full py-3 px-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Share Link Download QR
+            </button>
+
+            <button
+              onClick={handlePrintQR}
+              className="w-full py-3 px-4 rounded-xl bg-sasie-mocca hover:bg-sasie-mocca/90 text-white font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              Cetak QR Code
+            </button>
+
+            <button
+              onClick={handleCloseQRModal}
+              className="w-full py-3 px-4 rounded-xl border border-sasie-dove text-sasie-mocca hover:bg-sasie-dove/30 transition-colors"
+            >
+              Tutup & Kembali ke Daftar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Dashboard View
   if (currentView === 'dashboard') {
@@ -315,6 +589,49 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <p className="text-sm text-sasie-milo/70">Speakers</p>
             </div>
           </div>
+        </div>
+
+        {/* Invitation Tracking Stats */}
+        <div className="glass-card p-6 mb-6">
+          <h3 className="text-lg font-medium text-sasie-mocca mb-4">Tracking Undangan</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-3xl font-bold text-sasie-marun">{invitationsNotSent}</p>
+              <p className="text-sm text-sasie-milo/70">Belum Dikirim</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-sasie-emerald">{invitationsSent}</p>
+              <p className="text-sm text-sasie-milo/70">Sudah Dikirim</p>
+            </div>
+          </div>
+          {invitationsNotSent > 0 && (
+            <div className="mt-4 p-3 rounded-lg bg-sasie-marun/10 border border-sasie-marun/30">
+              <p className="text-sm text-sasie-marun flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {invitationsNotSent} tamu belum menerima undangan
+              </p>
+              {stats.checkedIn > 0 && onUpdateGuest && (
+                <button
+                  onClick={async () => {
+                    if (confirm(`Mark ${stats.checkedIn} tamu yang sudah check-in sebagai "Sudah Dikirim"?`)) {
+                      const checkedInGuests = guests.filter(g => g.status === 'checked_in' && !g.invitationSent);
+                      const now = new Date().toISOString();
+                      for (const guest of checkedInGuests) {
+                        await onUpdateGuest(guest.id, { invitationSent: true, invitationSentTime: now });
+                      }
+                      setSuccessMessage(`${checkedInGuests.length} tamu ditandai sebagai "Sudah Dikirim"`);
+                      setTimeout(() => setSuccessMessage(''), 3000);
+                    }
+                  }}
+                  className="w-full mt-2 px-3 py-2 bg-sasie-emerald hover:bg-sasie-emerald/90 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  ✅ Tandai {stats.checkedIn} Tamu Check-In sebagai "Sudah Dikirim"
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -485,6 +802,40 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
         </div>
 
+        {/* Invitation Filter */}
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setInvitationFilter('all')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              invitationFilter === 'all'
+                ? 'bg-sasie-mocca text-white'
+                : 'bg-white border border-sasie-mocca/30 text-sasie-mocca hover:bg-sasie-mocca/10'
+            }`}
+          >
+            Semua ({guests.length})
+          </button>
+          <button
+            onClick={() => setInvitationFilter('not_sent')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              invitationFilter === 'not_sent'
+                ? 'bg-sasie-marun text-white'
+                : 'bg-white border border-sasie-marun/30 text-sasie-marun hover:bg-sasie-marun/10'
+            }`}
+          >
+            Belum Dikirim ({invitationsNotSent})
+          </button>
+          <button
+            onClick={() => setInvitationFilter('sent')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              invitationFilter === 'sent'
+                ? 'bg-sasie-emerald text-white'
+                : 'bg-white border border-sasie-emerald/30 text-sasie-emerald hover:bg-sasie-emerald/10'
+            }`}
+          >
+            Sudah Dikirim ({invitationsSent})
+          </button>
+        </div>
+
         {/* Result Count */}
         <p className="text-sasie-milo text-sm mb-4 text-center">{filteredGuests.length} dari {guests.length} tamu</p>
 
@@ -502,13 +853,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div key={guest.id} className="glass-card p-4 hover:border-sasie-gold/50 transition-all">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <h3 className={`font-semibold ${guest.status === 'checked_in' ? 'text-sasie-emerald' : 'text-sasie-mocca'}`}>{guest.name}</h3>
                       {guest.category === 'VIP' && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40">VIP</span>
                       )}
                       {guest.status === 'checked_in' && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-sasie-emerald/20 text-sasie-emerald border border-sasie-emerald/40">Checked In</span>
+                      )}
+                      {guest.invitationSent && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-300 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
+                          </svg>
+                          Dikirim
+                        </span>
                       )}
                     </div>
                     <p className="text-xs text-sasie-milo/60">ID: {guest.id} • {guest.category}</p>
@@ -529,7 +888,38 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     )}
                   </div>
 
-                  <div className="flex gap-2 ml-3">
+                  <div className="flex gap-2 ml-3 flex-wrap">
+                    <button
+                      onClick={() => handleShowQRForGuest(guest)}
+                      title="Lihat/Download QR Code"
+                      className="p-2 rounded-lg bg-sasie-gold/10 hover:bg-sasie-gold/20 text-sasie-gold transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleShareInvitation(guest)}
+                      title="Share Link Undangan"
+                      className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleMarkInvitationSent(guest)}
+                      title={guest.invitationSent ? 'Tandai sebagai belum dikirim' : 'Tandai sebagai sudah dikirim'}
+                      className={`p-2 rounded-lg transition-colors ${
+                        guest.invitationSent
+                          ? 'bg-sasie-emerald/10 hover:bg-sasie-emerald/20 text-sasie-emerald'
+                          : 'bg-sasie-emerald/10 hover:bg-sasie-emerald/20 text-sasie-emerald/60'
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
+                      </svg>
+                    </button>
                     <button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-sasie-mocca/10 hover:bg-sasie-mocca/20 text-sasie-mocca transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

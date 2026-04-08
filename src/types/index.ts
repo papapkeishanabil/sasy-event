@@ -8,6 +8,8 @@ export interface Guest {
   phone?: string;
   rsvpStatus?: 'pending' | 'confirmed' | 'declined' | 'maybe';
   rsvpResponseTime?: string;
+  invitationSent?: boolean; // Track if invitation has been sent
+  invitationSentTime?: string; // Track when invitation was sent
 }
 
 export interface Category {
