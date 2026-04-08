@@ -1,6 +1,11 @@
 {
-  "name": "sasy-event",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
+    {
+      "source": "/qr-download.html",
+      "destination": "/qr-download.html"
+    },
     {
       "source": "/:path*",
       "destination": "/index.html"
@@ -13,6 +18,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         }
       ]
     }
