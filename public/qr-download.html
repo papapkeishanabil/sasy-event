@@ -163,13 +163,19 @@
 
         // Try API endpoint first
         try {
+          console.log('Fetching from API:', `/api/guest?id=${guestId}`);
           const response = await fetch(`/api/guest?id=${guestId}`);
+          console.log('API Response status:', response.status);
           const data = await response.json();
+          console.log('API Response data:', data);
           if (data && !data.error) {
             guests = [data];
+            console.log('Guests set to:', guests);
+          } else {
+            console.log('Data has error or is empty');
           }
         } catch (e) {
-          console.log('API not available, trying localStorage');
+          console.log('API not available, trying localStorage:', e);
         }
 
         // Fallback to localStorage
