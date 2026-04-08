@@ -600,3 +600,42 @@ export const deleteCategory = async (
 
   return null;
 };
+
+/**
+ * Update all guests with a specific category name to a new category name
+ */
+export const updateGuestsCategory = async (
+  oldCategoryName: string,
+  newCategoryName: string
+): Promise<void> => {
+  const guests = await getGuests();
+  const guestsToUpdate = guests.filter(g => g.category === oldCategoryName);
+
+  if (guestsToUpdate.length === 0) return;
+
+  // Update local storage
+  const storageKey = 'sasie_guests';
+  const localData = localStorage.getItem(storageKey);
+  if (localData) {
+    const allGuests = JSON.parse(localData);
+    const updatedGuests = allGuests.map((g: Guest) =>
+      g.category === oldCategoryName ? { ...g, category: newCategoryName } : g
+    );
+    localStorage.setItem(storageKey, JSON.stringify(updatedGuests));
+  }
+
+  // Update Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .update({ category: newCategoryName })
+        .eq('category', oldCategoryName);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating guest categories in Supabase:', error);
+      throw error;
+    }
+  }
+};

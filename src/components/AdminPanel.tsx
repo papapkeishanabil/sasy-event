@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Guest, CheckInStats, Category } from '../types';
 import { parseCSV, downloadCSV } from '../utils/csvParser';
 import { generateQRPdf, generateQRCode } from '../utils/qrGenerator';
-import { clearAllData, getCategories, addCategory, updateCategory, deleteCategory } from '../utils/storage';
+import { clearAllData, getCategories, addCategory, updateCategory, deleteCategory, updateGuestsCategory, getGuests } from '../utils/storage';
 
 interface AdminPanelProps {
   guests: Guest[];
@@ -391,9 +391,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!editingCategory) return;
 
     try {
+      const oldCategory = categories.find(c => c.id === editingCategory.id);
+      const oldName = oldCategory?.name;
+
       const updated = await updateCategory(editingCategory.id, categoryFormData);
       if (updated) {
         setCategories(updated);
+
+        // Update all guests with the old category name
+        if (oldName && categoryFormData.name && oldName !== categoryFormData.name) {
+          await updateGuestsCategory(oldName, categoryFormData.name);
+          // Refresh guest list
+          const refreshedGuests = await getGuests();
+          setGuests(refreshedGuests);
+        }
+
         setSuccessMessage('Kategori berhasil diupdate!');
         setTimeout(() => setSuccessMessage(''), 2000);
         resetCategoryForm();
