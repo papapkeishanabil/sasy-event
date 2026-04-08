@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Download QR Code - SASIENALA × WARDAH</title>
-  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -218,70 +218,52 @@
         return;
       }
 
-      const qrData = {
-        id: guest.id,
-        name: guest.name
-      };
+      const qrData = JSON.stringify({ id: guest.id, name: guest.name });
       console.log('QR Data:', qrData);
 
-      const canvas = document.createElement('canvas');
+      // Update DOM first with QR container
+      document.getElementById('content').innerHTML = `
+        <div class="guest-name">${guest.name}</div>
+        <div class="guest-info">${guest.category || 'Regular'} • ID: #${guest.id}</div>
+        <div class="qr-container">
+          <div id="qrcode"></div>
+        </div>
+        <button class="download-btn" onclick="downloadQR()">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Download QR Code
+        </button>
+        <div class="footer">
+          QR Code ini untuk check-in di acara<br>
+          SASIENALA × WARDAH
+        </div>
+      `;
 
-      QRCode.toCanvas(canvas, JSON.stringify(qrData), {
+      // Generate QR Code using qrcodejs library
+      new QRCode(document.getElementById('qrcode'), {
+        text: qrData,
         width: 250,
-        margin: 2,
-        color: {
-          dark: '#0D0D0D',
-          light: '#FFFFFF'
-        },
-        errorCorrectionLevel: 'H'
-      }, function(error) {
-        console.log('QRCode callback called, error:', error);
-        if (error) {
-          console.error('QR Code generation error:', error);
-          document.getElementById('content').innerHTML = `
-            <div class="error">
-              Gagal generate QR Code.<br>
-              Silakan coba lagi nanti.
-            </div>
-          `;
-          return;
-        }
-
-        console.log('Updating DOM with QR code...');
-        document.getElementById('content').innerHTML = `
-          <div class="guest-name">${guest.name}</div>
-          <div class="guest-info">${guest.category || 'Regular'} • ID: #${guest.id}</div>
-          <div class="qr-container">
-            <canvas id="qr-code-canvas" width="250" height="250"></canvas>
-          </div>
-          <button class="download-btn" onclick="downloadQR()">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            Download QR Code
-          </button>
-          <div class="footer">
-            QR Code ini untuk check-in di acara<br>
-            SASIENALA × WARDAH
-          </div>
-        `;
-
-        const finalCanvas = document.getElementById('qr-code-canvas');
-        const ctx = finalCanvas.getContext('2d');
-        ctx.drawImage(canvas, 0, 0);
-
-        window.guestData = guest;
-        window.qrCanvas = finalCanvas;
-        console.log('QR Code display complete');
+        height: 250,
+        colorDark: '#0D0D0D',
+        colorLight: '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.H
       });
+
+      // Store for download
+      window.guestData = guest;
+      console.log('QR Code display complete');
     }
 
     function downloadQR() {
-      if (!window.qrCanvas || !window.guestData) return;
+      if (!window.guestData) return;
+
+      const qrImg = document.querySelector('#qrcode img');
+      if (!qrImg) return;
 
       const link = document.createElement('a');
       link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
-      link.href = window.qrCanvas.toDataURL('image/png');
+      link.href = qrImg.src;
       link.click();
     }
   </script>
