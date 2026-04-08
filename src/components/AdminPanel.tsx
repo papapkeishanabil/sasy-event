@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Guest, CheckInStats, Category } from '../types';
 import { parseCSV, downloadCSV } from '../utils/csvParser';
 import { generateQRPdf, generateQRCode } from '../utils/qrGenerator';
-import { clearAllData, getCategories, addCategory, updateCategory, deleteCategory, updateGuestsCategory, getGuests } from '../utils/storage';
+import { clearAllData, getCategories, addCategory, updateCategory, updateCategoryAndSyncGuests, deleteCategory, updateGuestsCategory, getGuests } from '../utils/storage';
 
 interface AdminPanelProps {
   guests: Guest[];
@@ -391,30 +391,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!editingCategory) return;
 
     try {
-      const oldCategory = categories.find(c => c.id === editingCategory.id);
-      const oldName = oldCategory?.name;
+      console.log('Updating category:', { id: editingCategory.id, newName: categoryFormData.name });
 
-      console.log('Updating category:', { id: editingCategory.id, oldName, newName: categoryFormData.name });
+      const result = await updateCategoryAndSyncGuests(editingCategory.id, categoryFormData);
 
-      const updated = await updateCategory(editingCategory.id, categoryFormData);
-      if (updated) {
-        setCategories(updated);
+      if (result) {
+        setCategories(result.categories);
 
-        // Update all guests with the old category name
-        if (oldName && categoryFormData.name && oldName !== categoryFormData.name) {
-          console.log('Updating guests from', oldName, 'to', categoryFormData.name);
-          try {
-            await updateGuestsCategory(oldName, categoryFormData.name);
-            console.log('Guest categories updated successfully');
-            // Refresh guest list via parent
-            const refreshedGuests = await getGuests();
-            onImport(refreshedGuests);
-          } catch (err) {
-            console.error('Failed to update guest categories:', err);
-          }
-        }
+        // Refresh guest list via parent
+        const refreshedGuests = await getGuests();
+        onImport(refreshedGuests);
 
-        setSuccessMessage('Kategori berhasil diupdate!');
+        const syncMsg = result.guestsUpdated > 0
+          ? ` (${result.guestsUpdated} tamu diperbarui)`
+          : '';
+
+        setSuccessMessage(`Kategori berhasil diupdate!${syncMsg}`);
         setTimeout(() => setSuccessMessage(''), 2000);
         resetCategoryForm();
         setEditingCategory(null);

@@ -531,7 +531,96 @@ export const addCategory = async (
 };
 
 /**
- * Update a category
+ * Update a category AND sync all guests with that category
+ */
+export const updateCategoryAndSyncGuests = async (
+  categoryId: string,
+  updates: Partial<Omit<Category, 'id'>>
+): Promise<{ categories: Category[]; guestsUpdated: number } | null> => {
+  // First, get the CURRENT category from database to ensure we have the correct old name
+  const oldCategories = await getCategories();
+  const categoryToUpdate = oldCategories.find(c => c.id === categoryId);
+
+  if (!categoryToUpdate) {
+    console.error('Category not found:', categoryId);
+    return null;
+  }
+
+  const oldName = categoryToUpdate.name;
+  const newName = updates.name || oldName;
+
+  console.log('Updating category:', { id: categoryId, oldName, newName });
+
+  // Update the category
+  const categories = await getCategories();
+  const categoryIndex = categories.findIndex(c => c.id === categoryId);
+
+  if (categoryIndex !== -1) {
+    categories[categoryIndex] = { ...categories[categoryIndex], ...updates };
+
+    if (isSupabaseConfigured()) {
+      try {
+        // Update category in database
+        const { error: categoryError } = await supabase
+          .from('categories')
+          .update({
+            name: categories[categoryIndex].name,
+            description: categories[categoryIndex].description,
+            color: categories[categoryIndex].color,
+            icon: categories[categoryIndex].icon,
+            display_order: categories[categoryIndex].display_order,
+          })
+          .eq('id', categoryId);
+
+        if (categoryError) throw categoryError;
+
+        // If name changed, update all guests with the old category name
+        if (oldName !== newName) {
+          console.log('Syncing guests from', oldName, 'to', newName);
+
+          const { data: updatedGuests, error: guestError } = await supabase
+            .from('guests')
+            .update({ category: newName })
+            .eq('category', oldName)
+            .select('id');
+
+          if (guestError) throw guestError;
+
+          const guestsUpdated = updatedGuests?.length || 0;
+          console.log('Guests synced:', guestsUpdated);
+
+          // Update local storage too
+          const storageKey = 'sasie_guests';
+          const localData = localStorage.getItem(storageKey);
+          if (localData) {
+            const allGuests = JSON.parse(localData);
+            const updatedLocalGuests = allGuests.map((g: Guest) =>
+              g.category === oldName ? { ...g, category: newName } : g
+            );
+            localStorage.setItem(storageKey, JSON.stringify(updatedLocalGuests));
+          }
+
+          cacheCategories(categories);
+          return { categories, guestsUpdated };
+        }
+
+        cacheCategories(categories);
+        return { categories, guestsUpdated: 0 };
+      } catch (error) {
+        console.error('Error updating category in Supabase:', error);
+        throw error;
+      }
+    }
+
+    cacheCategories(categories);
+    return { categories, guestsUpdated: 0 };
+  }
+
+  return null;
+};
+
+/**
+ * Update a category (legacy, kept for compatibility)
  */
 export const updateCategory = async (
   categoryId: string,
