@@ -1,14 +1,7 @@
-import { json } from '@vercel/edge';
-import type { RequestContext } from '@vercel/edge';
+const SUPABASE_URL = 'https://mrkjatwshfnldnfutuov.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_cHFEhHIqlBuqLb9gcy0ztg_uI_cQZE8';
 
-export const config = {
-  runtime: 'edge',
-};
-
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || '';
-
-export default async function handler(request: RequestContext) {
+export default async function handler(request: Request) {
   // Add CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -24,11 +17,10 @@ export default async function handler(request: RequestContext) {
   const guestId = url.searchParams.get('id');
 
   if (!guestId) {
-    return json({ error: 'Guest ID is required' }, { status: 400, headers: corsHeaders });
-  }
-
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    return json({ error: 'Supabase not configured' }, { status: 500, headers: corsHeaders });
+    return new Response(
+      JSON.stringify({ error: 'Guest ID is required' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
@@ -50,14 +42,20 @@ export default async function handler(request: RequestContext) {
     const data = await response.json();
 
     if (!data || data.length === 0) {
-      return json({ error: 'Guest not found' }, { status: 404, headers: corsHeaders });
+      return new Response(
+        JSON.stringify({ error: 'Guest not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    return json(data[0], { headers: corsHeaders });
+    return new Response(
+      JSON.stringify(data[0]),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error: any) {
-    return json(
-      { error: error.message || 'Failed to fetch guest data' },
-      { status: 500, headers: corsHeaders }
+    return new Response(
+      JSON.stringify({ error: error.message || 'Failed to fetch guest data' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 }
