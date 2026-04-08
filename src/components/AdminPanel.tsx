@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Guest, CheckInStats, Category } from '../types';
 import { parseCSV, downloadCSV } from '../utils/csvParser';
 import { generateQRPdf, generateQRCode } from '../utils/qrGenerator';
-import { clearAllData, getCategories, addCategory, updateCategory, updateCategoryAndSyncGuests, deleteCategory, updateGuestsCategory, getGuests } from '../utils/storage';
+import { clearAllData, getCategories, addCategory, updateCategoryAndSyncGuests, deleteCategory, getGuests } from '../utils/storage';
 
 interface AdminPanelProps {
   guests: Guest[];
