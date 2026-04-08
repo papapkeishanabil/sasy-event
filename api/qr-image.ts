@@ -6,7 +6,6 @@ export const config = {
 };
 
 export default async function handler(request: Request) {
-  // Add CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -21,10 +20,7 @@ export default async function handler(request: Request) {
   const guestId = url.searchParams.get('id');
 
   if (!guestId) {
-    return new Response('Guest ID is required', {
-      status: 400,
-      headers: { 'Content-Type': 'text/plain' }
-    });
+    return new Response('Guest ID is required', { status: 400 });
   }
 
   try {
@@ -46,66 +42,32 @@ export default async function handler(request: Request) {
     const data = await response.json();
 
     if (!data || data.length === 0) {
-      return new Response('Guest not found', {
-        status: 404,
-        headers: { 'Content-Type': 'text/plain' }
-      });
+      return new Response('Guest not found', { status: 404 });
     }
 
     const guest = data[0];
+    const qrData = JSON.stringify({ id: guest.id, name: guest.name });
 
-    // Generate a simple pattern based on guest ID
-    const size = 250;
-    const moduleSize = 10;
-    const margin = 20;
+    // Use external QR code API (quickchart.io or qrserver)
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
 
-    // Generate a simple pattern based on guest ID (not a real QR, but a placeholder)
-    // For production, use a real QR code library
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <rect width="${size}" height="${size}" fill="white"/>
-      <g fill="black">
-    `;
-
-    // Generate a pseudo-random pattern based on guest ID
-    const seed = guest.id;
-    for (let y = margin; y < size - margin; y += moduleSize) {
-      for (let x = margin; x < size - margin; x += moduleSize) {
-        const index = ((y - margin) / moduleSize) * 20 + ((x - margin) / moduleSize);
-        const shouldFill = ((seed + index) * 17) % 3 !== 0;
-        if (shouldFill) {
-          svg += `<rect x="${x}" y="${y}" width="${moduleSize - 1}" height="${moduleSize - 1}"/>`;
-        }
-      }
+    // Fetch the QR code image
+    const qrResponse = await fetch(qrApiUrl);
+    if (!qrResponse.ok) {
+      throw new Error('QR API failed');
     }
 
-    svg += `</g>
-      <text x="${size/2}" y="${size - 10}" font-family="Arial" font-size="12" text-anchor="middle" fill="#000">${guest.name}</text>
-      <text x="${size/2}" y="${size - 25}" font-family="Arial" font-size="10" text-anchor="middle" fill="#666">ID: ${guest.id}</text>
-    </svg>`;
+    const qrBlob = await qrResponse.blob();
 
-    // Convert SVG to PNG using canvas
-    const pngBlob = await svgToPng(svg);
-
-    return new Response(pngBlob, {
+    return new Response(qrBlob, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'image/png',
         'Content-Disposition': `attachment; filename="QR_${guest.name.replace(/\s+/g, '_')}_${guest.id}.png"`,
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'public, max-age=3600',
       },
     });
   } catch (error: any) {
-    return new Response(error.message || 'Error generating QR', {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain' }
-    });
+    return new Response(error.message || 'Error generating QR', { status: 500 });
   }
-}
-
-async function svgToPng(svg: string): Promise<Blob> {
-  // Create a simple SVG-to-PNG conversion
-  // Since Edge Runtime doesn't have canvas, we'll return SVG as PNG-like content
-
-  // For now, return SVG with PNG extension (browsers can handle this)
-  return new Blob([svg], { type: 'image/png' });
 }
