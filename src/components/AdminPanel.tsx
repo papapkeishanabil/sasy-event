@@ -401,9 +401,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         // Update all guests with the old category name
         if (oldName && categoryFormData.name && oldName !== categoryFormData.name) {
           await updateGuestsCategory(oldName, categoryFormData.name);
-          // Refresh guest list
+          // Refresh guest list via parent
           const refreshedGuests = await getGuests();
-          setGuests(refreshedGuests);
+          onImport(refreshedGuests);
         }
 
         setSuccessMessage('Kategori berhasil diupdate!');
