@@ -205,10 +205,12 @@
     }
 
     function displayQRCode(guest) {
+      console.log('displayQRCode called with guest:', guest);
       const qrData = {
         id: guest.id,
         name: guest.name
       };
+      console.log('QR Data:', qrData);
 
       const canvas = document.createElement('canvas');
 
@@ -221,7 +223,9 @@
         },
         errorCorrectionLevel: 'H'
       }, function(error) {
+        console.log('QRCode callback called, error:', error);
         if (error) {
+          console.error('QR Code generation error:', error);
           document.getElementById('content').innerHTML = `
             <div class="error">
               Gagal generate QR Code.<br>
@@ -231,6 +235,7 @@
           return;
         }
 
+        console.log('Updating DOM with QR code...');
         document.getElementById('content').innerHTML = `
           <div class="guest-name">${guest.name}</div>
           <div class="guest-info">${guest.category || 'Regular'} • ID: #${guest.id}</div>
@@ -255,6 +260,7 @@
 
         window.guestData = guest;
         window.qrCanvas = finalCanvas;
+        console.log('QR Code display complete');
       });
     }
 
