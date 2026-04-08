@@ -13,7 +13,7 @@ export default async function handler(request: Request) {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const url = new URL(request.url);
+  const url = new URL(request.url, 'http://localhost');
   const guestId = url.searchParams.get('id');
 
   if (!guestId) {
