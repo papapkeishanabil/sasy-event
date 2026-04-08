@@ -234,6 +234,12 @@
           </svg>
           Download QR Code
         </button>
+        <button class="download-btn" onclick="downloadQRServer()" style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Download (Server)
+        </button>
         <div class="footer">
           QR Code ini untuk check-in di acara<br>
           SASIENALA × WARDAH<br>
@@ -381,6 +387,17 @@
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
+    }
+
+    function downloadQRServer() {
+      if (!window.guestData) {
+        alert('Data tamu belum siap. Silakan refresh halaman.');
+        return;
+      }
+
+      // Open server-side QR code generator in new tab
+      const url = `/api/qr-image?id=${window.guestData.id}`;
+      window.open(url, '_blank');
     }
   </script>
 </body>

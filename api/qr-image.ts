@@ -54,10 +54,7 @@ export default async function handler(request: Request) {
 
     const guest = data[0];
 
-    // Generate QR code as SVG
-    const qrData = JSON.stringify({ id: guest.id, name: guest.name });
-
-    // Simple QR code SVG generator
+    // Generate a simple pattern based on guest ID
     const size = 250;
     const moduleSize = 10;
     const margin = 20;
@@ -87,7 +84,7 @@ export default async function handler(request: Request) {
     </svg>`;
 
     // Convert SVG to PNG using canvas
-    const pngBlob = await svgToPng(svg, size, size);
+    const pngBlob = await svgToPng(svg);
 
     return new Response(pngBlob, {
       headers: {
@@ -105,7 +102,7 @@ export default async function handler(request: Request) {
   }
 }
 
-async function svgToPng(svg: string, width: number, height: number): Promise<Blob> {
+async function svgToPng(svg: string): Promise<Blob> {
   // Create a simple SVG-to-PNG conversion
   // Since Edge Runtime doesn't have canvas, we'll return SVG as PNG-like content
 
