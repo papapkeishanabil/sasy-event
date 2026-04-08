@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Download QR Code - SASIENALA × WARDAH</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -206,6 +206,18 @@
 
     function displayQRCode(guest) {
       console.log('displayQRCode called with guest:', guest);
+      console.log('QRCode library available:', typeof QRCode);
+
+      if (typeof QRCode === 'undefined') {
+        document.getElementById('content').innerHTML = `
+          <div class="error">
+            QR Code library gagal dimuat.<br>
+            Silakan refresh halaman atau coba lagi nanti.
+          </div>
+        `;
+        return;
+      }
+
       const qrData = {
         id: guest.id,
         name: guest.name
