@@ -46,9 +46,10 @@ export default async function handler(request: Request) {
     }
 
     const guest = data[0];
-    const qrData = JSON.stringify({ id: guest.id, name: guest.name });
+    // Encode as simple ID-only format for better compatibility
+    const qrData = `id:${guest.id}`;
 
-    // Use external QR code API (quickchart.io or qrserver)
+    // Use external QR code API (qrserver.com)
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
 
     // Fetch the QR code image
