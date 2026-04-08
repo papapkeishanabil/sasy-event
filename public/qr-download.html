@@ -241,7 +241,7 @@
       `;
 
       // Generate QR Code using qrcodejs library
-      new QRCode(document.getElementById('qrcode'), {
+      const qrCodeObj = new QRCode(document.getElementById('qrcode'), {
         text: qrData,
         width: 250,
         height: 250,
@@ -252,14 +252,21 @@
 
       // Store for download
       window.guestData = guest;
+      window.qrCodeObj = qrCodeObj;
 
-      // Wait for QR code image to be ready before enabling download
-      const checkQRCodeReady = setInterval(() => {
+      // Set up image load handler
+      setTimeout(() => {
         const qrImg = document.querySelector('#qrcode img');
-        if (qrImg && qrImg.src && qrImg.complete) {
-          clearInterval(checkQRCodeReady);
-          console.log('QR Code image ready:', qrImg.src.substring(0, 50) + '...');
-          window.qrCodeReady = true;
+        if (qrImg) {
+          qrImg.onload = () => {
+            console.log('QR Code image loaded via onload');
+            window.qrCodeReady = true;
+          };
+          // If already loaded
+          if (qrImg.complete && qrImg.src) {
+            console.log('QR Code image already complete');
+            window.qrCodeReady = true;
+          }
         }
       }, 100);
 
@@ -268,66 +275,64 @@
 
     function downloadQR() {
       console.log('Download clicked, guestData:', window.guestData);
-      console.log('QR Code ready:', window.qrCodeReady);
 
       if (!window.guestData) {
-        alert('Data tamu belum siap. Silakan tunggu...');
+        alert('Data tamu belum siap. Silakan refresh halaman.');
         return;
       }
 
-      if (!window.qrCodeReady) {
-        alert('QR Code belum siap. Silakan tunggu beberapa detik...');
-        return;
-      }
+      // Try to find QR code image with multiple attempts
+      let qrImg = document.querySelector('#qrcode img');
+      const qrCanvas = document.querySelector('#qrcode canvas');
 
-      const qrImg = document.querySelector('#qrcode img');
       console.log('QR Image found:', !!qrImg);
-      console.log('QR Image src length:', qrImg?.src?.length || 0);
+      console.log('QR Canvas found:', !!qrCanvas);
 
-      if (!qrImg || !qrImg.src) {
-        alert('QR Code gagal dibuat. Silakan refresh halaman.');
+      // If canvas exists but not image, use canvas (fallback)
+      if (!qrImg && qrCanvas) {
+        console.log('Using canvas fallback');
+        const link = document.createElement('a');
+        link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
+        link.href = qrCanvas.toDataURL('image/png');
+        link.click();
+        return;
+      }
+
+      if (!qrImg) {
+        alert('QR Code belum siap. Silakan tunggu beberapa detik atau refresh halaman.');
         return;
       }
 
       // Show downloading indicator
       const btn = document.querySelector('.download-btn');
       const originalText = btn.innerHTML;
-      btn.innerHTML = 'Memproses...';
+      btn.innerHTML = 'Downloading...';
       btn.disabled = true;
 
-      // Convert data URL to Blob for better cross-platform compatibility
-      fetch(qrImg.src)
-        .then(res => {
-          console.log('Fetch response:', res.status, res.type);
-          return res.blob();
-        })
-        .then(blob => {
-          console.log('Blob created, size:', blob.size, 'type:', blob.type);
+      // Direct download using the image src
+      try {
+        console.log('QR Image src length:', qrImg.src.length);
 
-          // Create download with proper MIME type
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
-          link.type = 'image/png';
+        const link = document.createElement('a');
+        link.href = qrImg.src;
+        link.download = `QR_${window.guestData.name.replace(/\s+/g, '_')}_${window.guestData.id}.png`;
 
-          document.body.appendChild(link);
-          link.click();
+        // Force download on Android
+        link.setAttribute('target', '_blank');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-          // Cleanup
-          setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-          }, 100);
-        })
-        .catch(err => {
-          console.error('Download failed:', err);
-          alert('Download gagal. Silakan coba lagi atau screenshot QR Code ini.');
+        setTimeout(() => {
           btn.innerHTML = originalText;
           btn.disabled = false;
-        });
+        }, 500);
+      } catch (err) {
+        console.error('Download error:', err);
+        alert('Download gagal. Silakan coba screenshot QR Code.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
     }
   </script>
 </body>
