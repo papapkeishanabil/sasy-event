@@ -88,7 +88,9 @@
       "Bash(where vercel:*)",
       "Bash(grep \"mobile-text-boost\" dist/assets/*.css)",
       "Bash(cat dist/assets/*.css)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(mkdir -p api)",
+      "Bash(mv src/pages/api/guest.ts api/guest.ts)"
     ]
   }
 }
