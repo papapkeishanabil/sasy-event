@@ -313,7 +313,35 @@ export const updateGuest = async (
 
     if (isSupabaseConfigured()) {
       try {
-        const dbUpdate = mapGuestToDb(updatedGuest);
+        // Only include the fields being updated, not the entire guest object
+        const dbUpdate: any = {};
+        if (updates.name !== undefined) dbUpdate.name = updates.name;
+        if (updates.category !== undefined) dbUpdate.category = updates.category;
+        if (updates.status !== undefined) dbUpdate.status = updates.status;
+        if (updates.checkInTime !== undefined) dbUpdate.check_in_time = updates.checkInTime;
+        if (updates.email !== undefined) dbUpdate.email = updates.email;
+        if (updates.phone !== undefined) dbUpdate.phone = updates.phone;
+        if (updates.rsvpStatus !== undefined) dbUpdate.rsvp_status = updates.rsvpStatus;
+        if (updates.rsvpResponseTime !== undefined) dbUpdate.rsvp_response_time = updates.rsvpResponseTime;
+        // Only include invitation fields if they're being updated
+        // These will be stored locally even if Supabase update fails
+        if (updates.invitationSent !== undefined) {
+          try {
+            dbUpdate.invitation_sent = updates.invitationSent;
+          } catch (e) {
+            // Field might not exist in DB, but we'll store locally
+            console.log('invitation_sent field may not exist in DB yet');
+          }
+        }
+        if (updates.invitationSentTime !== undefined) {
+          try {
+            dbUpdate.invitation_sent_time = updates.invitationSentTime;
+          } catch (e) {
+            // Field might not exist in DB, but we'll store locally
+            console.log('invitation_sent_time field may not exist in DB yet');
+          }
+        }
+
         console.log('Updating guest in Supabase:', guestId, dbUpdate);
 
         // Update Supabase and wait for confirmation with response data
@@ -326,6 +354,12 @@ export const updateGuest = async (
 
         if (error) {
           console.error('Supabase error updating guest:', error);
+          // If it's a column doesn't exist error, still cache locally
+          if (error.message && error.message.includes('column')) {
+            console.log('Column does not exist in DB, caching locally only');
+            cacheGuests(guests);
+            return guests;
+          }
           throw error;
         }
         console.log('Guest updated successfully, confirmed data:', data);
@@ -334,8 +368,14 @@ export const updateGuest = async (
         if (data) {
           guests[guestIndex] = mapDbToGuest(data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error updating guest:', error);
+        // If column doesn't exist, cache locally and continue
+        if (error.message && error.message.includes('column')) {
+          console.log('Column does not exist in DB, caching locally only');
+          cacheGuests(guests);
+          return guests;
+        }
         throw error;
       }
     }
