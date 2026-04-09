@@ -37,10 +37,9 @@ export const useGuestData = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'guests',
-          filter: `table_name=eq.guests`
+          table: 'guests'
         },
-        async (payload: {
+        async (payload: any) => {
           console.log('Real-time update received:', payload);
           console.log('Event type:', payload.eventType);
           // Reload all guests when changes occur
@@ -48,7 +47,7 @@ export const useGuestData = () => {
           setGuests(updated);
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         console.log('Subscription status:', status);
       });
 
