@@ -57,9 +57,34 @@
     <p>Menambahkan kolom <code>invitation_sent</code> dan <code>invitation_sent_time</code> ke tabel <code>guests</code></p>
 
     <div class="sql-box">
-ALTER TABLE guests
-ADD COLUMN IF NOT EXISTS invitation_sent BOOLEAN DEFAULT FALSE,
-ADD COLUMN IF NOT EXISTS invitation_sent_time TIMESTAMPTZ;
+-- Safe Migration: Run this in Supabase SQL Editor
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'guests'
+    AND column_name = 'invitation_sent'
+  ) THEN
+    ALTER TABLE guests ADD COLUMN invitation_sent BOOLEAN DEFAULT FALSE;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'guests'
+    AND column_name = 'invitation_sent_time'
+  ) THEN
+    ALTER TABLE guests ADD COLUMN invitation_sent_time TIMESTAMPTZ;
+  END IF;
+END $$;
+
+-- Verify columns
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'guests'
+AND column_name IN ('invitation_sent', 'invitation_sent_time');
     </div>
 
     <div class="steps">
@@ -70,6 +95,9 @@ ADD COLUMN IF NOT EXISTS invitation_sent_time TIMESTAMPTZ;
 
     <a href="https://supabase.com/dashboard/project/mrkjatwshfnldnfutuov/sql/new" target="_blank" class="btn">
       🚀 Buka Supabase SQL Editor
+    </a>
+    <a href="https://supabase.com/dashboard/project/mrkjatwshfnldnfutuov/sql/new?query=DO%20%24%24%0ABEGIN%0A%20%20IF%20NOT%20EXISTS%20(%0A%20%20%20%20SELECT%201%20FROM%20information_schema.columns%0A%20%20%20%20WHERE%20table_name%20%3D%20'guests'%0A%20%20%20%20AND%20column_name%20%3D%20'invitation_sent'%0A%20%20)%0A%20%20THEN%0A%20%20%20%20ALTER%20TABLE%20guests%20ADD%20COLUMN%20invitation_sent%20BOOLEAN%20DEFAULT%20FALSE%3B%0A%20%20END%20IF%3B%0AEND%20%24%24%3B%0A%0ADO%20%24%24%0ABEGIN%0A%20%20IF%20NOT%20EXISTS%20(%0A%20%20%20%20SELECT%201%20FROM%20information_schema.columns%0A%20%20%20%20WHERE%20table_name%20%3D%20'guests'%0A%20%20%20%20AND%20column_name%20%3D%20'invitation_sent_time'%0A%20%20)%0A%20%20THEN%0A%20%20%20%20ALTER%20TABLE%20guests%20ADD%20COLUMN%20invitation_sent_time%20TIMESTAMPTZ%3B%0A%20%20END%20IF%3B%0AEND%20%24%24%3B" target="_blank" class="btn">
+      ✨ Buka SQL Editor (Query Terisi)
     </a>
     <button onclick="copySQL()" class="btn btn-copy">📋 Copy SQL</button>
     <button onclick="checkStatus()" class="btn">✅ Cek Status</button>
