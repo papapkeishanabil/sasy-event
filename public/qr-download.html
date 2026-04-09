@@ -79,15 +79,19 @@
       padding: 20px;
       margin-bottom: 24px;
       border: 2px solid #D4AF3730;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    #qr-code {
-      width: 250px;
-      height: 250px;
-      margin: 0 auto;
+    #qrcode {
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    #qrcode img, #qrcode canvas {
+      display: block;
+      margin: 0 auto;
     }
     .download-btn {
       background: linear-gradient(135deg, #D4AF37 0%, #C4A030 100%);
