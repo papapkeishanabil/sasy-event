@@ -27,7 +27,7 @@ const cacheGuests = (guests: Guest[]): void => {
   }
 };
 
-const mapDbToGuest = (dbGuest: any): Guest => ({
+const mapDbToGuest = (dbGuest: any, existingGuest?: Guest): Guest => ({
   id: dbGuest.id,
   name: dbGuest.name,
   category: dbGuest.category,
@@ -37,8 +37,9 @@ const mapDbToGuest = (dbGuest: any): Guest => ({
   phone: dbGuest.phone,
   rsvpStatus: dbGuest.rsvp_status,
   rsvpResponseTime: dbGuest.rsvp_response_time,
-  invitationSent: dbGuest.invitation_sent,
-  invitationSentTime: dbGuest.invitation_sent_time,
+  // Preserve local invitation tracking if not in DB or undefined
+  invitationSent: dbGuest.invitation_sent ?? existingGuest?.invitationSent ?? false,
+  invitationSentTime: dbGuest.invitation_sent_time ?? existingGuest?.invitationSentTime,
 });
 
 const mapGuestToDb = (guest: Guest) => ({
@@ -59,6 +60,10 @@ const mapGuestToDb = (guest: Guest) => ({
  * Get all guests from Supabase (with localStorage fallback)
  */
 export const getGuests = async (): Promise<Guest[]> => {
+  // Get local cached guests first to preserve invitation tracking
+  const localGuests = getCachedGuests();
+  const localGuestMap = new Map(localGuests.map(g => [g.id, g]));
+
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -71,7 +76,11 @@ export const getGuests = async (): Promise<Guest[]> => {
         throw error;
       }
       if (data) {
-        const guests = data.map(mapDbToGuest);
+        // Merge Supabase data with local data, preferring local values for invitation tracking
+        const guests = data.map((dbGuest: any) => {
+          const existingGuest = localGuestMap.get(dbGuest.id);
+          return mapDbToGuest(dbGuest, existingGuest);
+        });
         cacheGuests(guests);
         return guests;
       }
@@ -79,7 +88,7 @@ export const getGuests = async (): Promise<Guest[]> => {
       console.error('Error fetching from Supabase, using cache:', error);
     }
   }
-  return getCachedGuests();
+  return localGuests;
 };
 
 /**
@@ -364,9 +373,9 @@ export const updateGuest = async (
         }
         console.log('Guest updated successfully, confirmed data:', data);
 
-        // Use the confirmed data from Supabase to ensure consistency
+        // Use the confirmed data from Supabase, but preserve local state
         if (data) {
-          guests[guestIndex] = mapDbToGuest(data);
+          guests[guestIndex] = mapDbToGuest(data, updatedGuest);
         }
       } catch (error: any) {
         console.error('Error updating guest:', error);
