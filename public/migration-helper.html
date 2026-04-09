@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Migrasi Supabase - SASIENALA</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 { color: #D4AF37; margin-top: 0; }
+    .sql-box {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .btn {
+      display: inline-block;
+      background: #D4AF37;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    .btn:hover { background: #C4A030; }
+    .btn-copy { background: #2C3E50; }
+    .steps { margin: 20px 0; }
+    .step { margin: 12px 0; padding-left: 24px; position: relative; }
+    .step:before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #D4AF37;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔄 Migrasi Invitation Tracking</h1>
+    <p>Menambahkan kolom <code>invitation_sent</code> dan <code>invitation_sent_time</code> ke tabel <code>guests</code></p>
+
+    <div class="sql-box">
+ALTER TABLE guests
+ADD COLUMN IF NOT EXISTS invitation_sent BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS invitation_sent_time TIMESTAMPTZ;
+    </div>
+
+    <div class="steps">
+      <div class="step"><strong>Langkah 1:</strong> Klik tombol "Buka Supabase SQL Editor" di bawah</div>
+      <div class="step"><strong>Langkah 2:</strong> Klik tombol "Run" ▶️ di Supabase SQL Editor</div>
+      <div class="step"><strong>Langkah 3:</strong> Kembali ke sini dan klik "Cek Status"</div>
+    </div>
+
+    <a href="https://supabase.com/dashboard/project/mrkjatwshfnldnfutuov/sql/new" target="_blank" class="btn">
+      🚀 Buka Supabase SQL Editor
+    </a>
+    <button onclick="copySQL()" class="btn btn-copy">📋 Copy SQL</button>
+    <button onclick="checkStatus()" class="btn">✅ Cek Status</button>
+
+    <div id="status" style="margin-top: 20px; padding: 12px; border-radius: 8px; display: none;"></div>
+  </div>
+
+  <script>
+    function copySQL() {
+      const sql = document.querySelector('.sql-box').innerText.trim();
+      navigator.clipboard.writeText(sql);
+      alert('SQL berhasil di-copy! Silakan paste di Supabase SQL Editor.');
+    }
+
+    async function checkStatus() {
+      const statusDiv = document.getElementById('status');
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = '#fff3cd';
+      statusDiv.style.color = '#856404';
+      statusDiv.innerHTML = '⏳ Mengecek kolom di Supabase...';
+
+      try {
+        const response = await fetch('https://mrkjatwshfnldnfutuov.supabase.co/rest/v1/guests?select=&limit=1', {
+          headers: {
+            'apikey': 'sb_publishable_cHFEhHIqlBuqLb9gcy0ztg_uI_cQZE8'
+          }
+        });
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          const columns = Object.keys(data[0]);
+          const hasInvitationSent = columns.includes('invitation_sent');
+          const hasInvitationSentTime = columns.includes('invitation_sent_time');
+
+          if (hasInvitationSent && hasInvitationSentTime) {
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            statusDiv.innerHTML = '✅ <strong>MIGRASI BERHASIL!</strong><br>Kolom invitation_sent dan invitation_sent_time sudah ada di Supabase.';
+          } else {
+            statusDiv.style.background = '#f8d7da';
+            statusDiv.style.color = '#721c24';
+            statusDiv.innerHTML = '❌ <strong>Belum Migrasi</strong><br>Kolom belum ditambahkan. Silakan jalankan migration SQL di atas.';
+          }
+
+          console.log('Current columns:', columns.join(', '));
+        }
+      } catch (error) {
+        statusDiv.style.background = '#f8d7da';
+        statusDiv.style.color = '#721c24';
+        statusDiv.innerHTML = '❌ Error: ' + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
