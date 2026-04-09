@@ -338,7 +338,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Share QR download link for guest
   const handleShareQRDownloadLink = async (guest: Guest) => {
     const qrDownloadUrl = `${window.location.origin}/qr-download.html?id=${guest.id}`;
-    const shareText = `Berikut link untuk download QR Code check-in acara "SASIENALA : Color Of Us" :\n\n${qrDownloadUrl}`;
+    const shareText = `Halo ${guest.name},\n\nBerikut link untuk download QR Code check-in acara "SASIENALA : Color Of Us" :\n\n${qrDownloadUrl}`;
 
     if (navigator.share) {
       try {
