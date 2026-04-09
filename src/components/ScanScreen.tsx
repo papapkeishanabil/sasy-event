@@ -10,7 +10,7 @@ interface ScanScreenProps {
 
 const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) => {
   const [error, setError] = useState<string>('');
-  const [cameraMode, setCameraMode] = useState<'environment' | 'user'>('environment');
+  const [cameraMode, setCameraMode] = useState<'environment' | 'user'>('user');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanRegionId = 'scan-region';
 
