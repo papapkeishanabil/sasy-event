@@ -23,23 +23,37 @@ export const useGuestData = () => {
 
   // Real-time sync for Supabase
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured()) {
+      console.log('Supabase not configured, skipping real-time sync');
+      return;
+    }
+
+    console.log('Setting up real-time sync for guests table...');
 
     const channel = supabase
       .channel('guests-changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'guests' },
-        async (payload: any) => {
-          console.log('Real-time update:', payload);
+        {
+          event: '*',
+          schema: 'public',
+          table: 'guests',
+          filter: `table_name=eq.guests`
+        },
+        async (payload: {
+          console.log('Real-time update received:', payload);
+          console.log('Event type:', payload.eventType);
           // Reload all guests when changes occur
           const updated = await getGuests();
           setGuests(updated);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up real-time sync subscription');
       supabase.removeChannel(channel);
     };
   }, []);
