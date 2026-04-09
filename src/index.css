@@ -317,3 +317,46 @@
     line-height: 1.2 !important;
   }
 }
+
+/* QR Scanner mirroring for front camera */
+.scan-region-mirrored video,
+.scan-region-mirrored canvas {
+  transform: scaleX(-1);
+}
+
+/* Scan line animation */
+.scan-line {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  animation: scanMove 2s ease-in-out infinite;
+  box-shadow: 0 0 10px #D4AF37, 0 0 20px #D4AF37;
+}
+
+@keyframes scanMove {
+  0%, 100% {
+    top: 10%;
+  }
+  50% {
+    top: 90%;
+  }
+}
+
+/* Slide up animation */
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

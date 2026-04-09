@@ -43,33 +43,6 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           }
         );
 
-        // Apply mirror effect for front camera after scanner starts
-        setTimeout(() => {
-          const scanRegionEl = document.getElementById(scanRegionId);
-          if (scanRegionEl) {
-            // Find video element inside scanner region
-            const videoEl = scanRegionEl.querySelector('video');
-            if (videoEl) {
-              if (cameraMode === 'user') {
-                // Mirror for front camera (like a real mirror)
-                videoEl.style.transform = 'scaleX(-1)';
-              } else {
-                // No mirror for back camera
-                videoEl.style.transform = 'none';
-              }
-            }
-            // Also try to find any canvas or image elements
-            const canvasEl = scanRegionEl.querySelector('canvas');
-            if (canvasEl) {
-              if (cameraMode === 'user') {
-                canvasEl.style.transform = 'scaleX(-1)';
-              } else {
-                canvasEl.style.transform = 'none';
-              }
-            }
-          }
-        }, 1000);
-
         if (isMounted) {
           setError('');
         }
@@ -176,8 +149,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="relative w-full max-w-md">
           <div
-            className="rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
-            style={{ transform: cameraMode === 'user' ? 'scaleX(-1)' : 'none' }}
+            className={`rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10 ${cameraMode === 'user' ? 'scan-region-mirrored' : ''}`}
           >
             <div id={scanRegionId} />
           </div>
