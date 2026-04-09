@@ -24,14 +24,14 @@ export const useGuestData = () => {
   // Real-time sync for Supabase
   useEffect(() => {
     if (!isSupabaseConfigured()) {
-      console.log('Supabase not configured, skipping real-time sync');
+      console.log('[Realtime] Supabase not configured, skipping real-time sync');
       return;
     }
 
-    console.log('Setting up real-time sync for guests table...');
+    console.log('[Realtime] Setting up real-time sync for guests table...');
 
     const channel = supabase
-      .channel('guests-changes')
+      .channel('guests-changes-' + Date.now())
       .on(
         'postgres_changes',
         {
@@ -40,19 +40,29 @@ export const useGuestData = () => {
           table: 'guests'
         },
         async (payload: any) => {
-          console.log('Real-time update received:', payload);
-          console.log('Event type:', payload.eventType);
+          console.log('[Realtime] 🎉 Update received:', payload);
+          console.log('[Realtime] Event type:', payload.eventType);
+          console.log('[Realtime] Old record:', payload.old);
+          console.log('[Realtime] New record:', payload.new);
           // Reload all guests when changes occur
           const updated = await getGuests();
           setGuests(updated);
         }
       )
       .subscribe((status: any) => {
-        console.log('Subscription status:', status);
+        console.log('[Realtime] Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[Realtime] ✅ Successfully subscribed to guests table changes');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Realtime] ❌ Channel error - Realtime may not be enabled in Supabase Dashboard');
+          console.error('[Realtime] Go to: Database > Replication > Enable "guests" table');
+        } else if (status === 'TIMED_OUT') {
+          console.error('[Realtime] ⏱️ Connection timed out');
+        }
       });
 
     return () => {
-      console.log('Cleaning up real-time sync subscription');
+      console.log('[Realtime] Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, []);
