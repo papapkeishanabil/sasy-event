@@ -33,7 +33,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           { facingMode: cameraMode },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 },
+            qrbox: { width: 400, height: 400 },
           },
           (decodedText) => {
             handleScanSuccess(decodedText);
