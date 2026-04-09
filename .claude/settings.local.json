@@ -93,7 +93,8 @@
       "Bash(mv src/pages/api/guest.ts api/guest.ts)",
       "Bash(awk 'NR==236 {skip} NR==237 {skip} {print}' public/qr-download.html)",
       "Bash(mv temp.html public/qr-download.html)",
-      "Bash(ls -d */)"
+      "Bash(ls -d */)",
+      "Bash(mv:*)"
     ]
   }
 }
