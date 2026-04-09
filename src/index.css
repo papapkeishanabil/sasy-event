@@ -318,12 +318,6 @@
   }
 }
 
-/* QR Scanner mirroring for front camera */
-.scan-region-mirrored video,
-.scan-region-mirrored canvas {
-  transform: scaleX(-1);
-}
-
 /* Scan line animation */
 .scan-line {
   position: absolute;

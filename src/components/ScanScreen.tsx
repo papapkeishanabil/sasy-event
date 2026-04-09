@@ -43,9 +43,53 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           }
         );
 
-        if (isMounted) {
-          setError('');
+        // Apply mirror effect for front camera - more aggressive approach
+        const applyMirror = () => {
+          const scanRegionEl = document.getElementById(scanRegionId);
+          if (!scanRegionEl) return;
+
+          // Find all video elements (including those created by the library)
+          const videos = scanRegionEl.querySelectorAll('video');
+          videos.forEach(video => {
+            if (cameraMode === 'user') {
+              video.style.setProperty('transform', 'scaleX(-1)', 'important');
+            } else {
+              video.style.removeProperty('transform');
+            }
+          });
+
+          // Also find any canvas elements
+          const canvases = scanRegionEl.querySelectorAll('canvas');
+          canvases.forEach(canvas => {
+            if (cameraMode === 'user') {
+              canvas.style.setProperty('transform', 'scaleX(-1)', 'important');
+            } else {
+              canvas.style.removeProperty('transform');
+            }
+          });
+        };
+
+        // Apply immediately and set up observer for dynamic elements
+        applyMirror();
+
+        // Use MutationObserver to watch for video element changes
+        const observer = new MutationObserver(() => {
+          applyMirror();
+        });
+
+        const scanRegionEl = document.getElementById(scanRegionId);
+        if (scanRegionEl) {
+          observer.observe(scanRegionEl, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style']
+          });
         }
+
+        // Cleanup observer on unmount
+        return () => observer.disconnect();
+
       } catch (err) {
         if (isMounted) {
           setError('Unable to access camera. Please check permissions.');
@@ -149,7 +193,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="relative w-full max-w-md">
           <div
-            className={`rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10 ${cameraMode === 'user' ? 'scan-region-mirrored' : ''}`}
+            className="rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
           >
             <div id={scanRegionId} />
           </div>
