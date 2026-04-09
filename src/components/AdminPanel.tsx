@@ -45,6 +45,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrModalGuest, setQrModalGuest] = useState<Guest | null>(null);
   const [qrModalDataUrl, setQrModalDataUrl] = useState<string | null>(null);
+  // Expanded guest menu state
+  const [expandedGuestId, setExpandedGuestId] = useState<number | null>(null);
 
   // Category management state
   const [categories, setCategories] = useState<Category[]>([]);
@@ -295,6 +297,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setQrModalGuest(null);
     setQrModalDataUrl(null);
     setCurrentView('guests');
+  };
+
+  // Toggle guest menu
+  const toggleGuestMenu = (guestId: number) => {
+    setExpandedGuestId(expandedGuestId === guestId ? null : guestId);
   };
 
   // Show QR modal for existing guest
@@ -780,7 +787,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sasie-milo/60 text-sm mt-4">SASIENALA x WARDAH Guest Check-in System</p>
+        <p className="text-center text-sasie-milo/60 text-sm mt-4">SASIENALA Guest Check In System</p>
       </div>
     );
   }
@@ -863,7 +870,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         {/* Result Count */}
         <p className="text-sasie-milo text-sm mb-4 text-center">{filteredGuests.length} dari {guests.length} tamu</p>
 
-        {/* Guest List */}
+        {/* Guest List - Mobile Optimized */}
         <div className="flex-1 overflow-y-auto space-y-2 pb-safe">
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12">
@@ -874,88 +881,134 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           ) : (
             filteredGuests.map((guest) => (
-              <div key={guest.id} className="glass-card p-4 hover:border-sasie-gold/50 transition-all">
-                <div className="flex items-start justify-between">
+              <div key={guest.id} className="glass-card p-3 hover:border-sasie-gold/50 transition-all">
+                {/* Main Row: Name + Status + Quick Actions */}
+                <div className="flex items-center gap-2 mb-2">
+                  {/* Status Indicator */}
+                  <div className={`flex-shrink-0 w-2.5 h-2.5 rounded-full ${
+                    guest.status === 'checked_in' ? 'bg-sasie-emerald' : 'bg-sasie-milo/40'
+                  }`} />
+
+                  {/* Name & Badges */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <h3 className={`font-semibold ${guest.status === 'checked_in' ? 'text-sasie-emerald' : 'text-sasie-mocca'}`}>{guest.name}</h3>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <h3 className={`font-semibold text-sm leading-tight ${
+                        guest.status === 'checked_in' ? 'text-sasie-emerald' : 'text-sasie-mocca'
+                      }`}>{guest.name}</h3>
                       {guest.category === 'VIP' && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40">VIP</span>
-                      )}
-                      {guest.status === 'checked_in' && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-sasie-emerald/20 text-sasie-emerald border border-sasie-emerald/40">Checked In</span>
-                      )}
-                      {guest.invitationSent && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-300 flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
-                          </svg>
-                          Dikirim
-                        </span>
+                        <span className="text-[9px] px-1 py-0.5 rounded-full bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40 font-medium">VIP</span>
                       )}
                     </div>
-                    <p className="text-xs text-sasie-milo/60">ID: {guest.id} • {guest.category}</p>
-                    {guest.email && <p className="text-xs text-sasie-milo/60">{guest.email}</p>}
-                    {guest.phone && <p className="text-xs text-sasie-milo/60">{guest.phone}</p>}
-                    {guest.rsvpStatus && (
-                      <p className="text-xs text-sasie-milo/60 mt-1">
-                        RSVP: <span className={`font-medium ${
-                          guest.rsvpStatus === 'confirmed' ? 'text-sasie-emerald' :
-                          guest.rsvpStatus === 'declined' ? 'text-sasie-marun' :
-                          guest.rsvpStatus === 'maybe' ? 'text-sasie-gold' : 'text-sasie-milo'
-                        }`}>
-                          {guest.rsvpStatus === 'confirmed' ? 'Hadir' :
-                           guest.rsvpStatus === 'declined' ? 'Tidak' :
-                           guest.rsvpStatus === 'maybe' ? 'Ragu' : 'Pending'}
-                        </span>
-                      </p>
-                    )}
+                    <p className="text-[11px] text-sasie-milo/60 mt-0.5">#{guest.id} • {guest.category}</p>
                   </div>
 
-                  <div className="flex gap-2 ml-3 flex-wrap">
+                  {/* Quick Action Buttons (Inline) */}
+                  <div className="flex gap-1 flex-shrink-0">
                     <button
                       onClick={() => handleShowQRForGuest(guest)}
-                      title="Lihat/Download QR Code"
-                      className="p-2 rounded-lg bg-sasie-gold/10 hover:bg-sasie-gold/20 text-sasie-gold transition-colors"
+                      className="p-1.5 rounded-lg bg-sasie-gold/10 hover:bg-sasie-gold/20 text-sasie-gold transition-colors"
+                      title="QR Code"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                       </svg>
                     </button>
                     <button
-                      onClick={() => handleShareInvitation(guest)}
-                      title="Share Link Undangan"
-                      className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleGuestMenu(guest.id);
+                      }}
+                      className="p-1.5 rounded-lg bg-sasie-milo/10 hover:bg-sasie-milo/20 text-sasie-milo transition-colors"
+                      title="More"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleMarkInvitationSent(guest)}
-                      title={guest.invitationSent ? 'Tandai sebagai belum dikirim' : 'Tandai sebagai sudah dikirim'}
-                      className={`p-2 rounded-lg transition-colors ${
-                        guest.invitationSent
-                          ? 'bg-sasie-emerald/10 hover:bg-sasie-emerald/20 text-sasie-emerald'
-                          : 'bg-sasie-emerald/10 hover:bg-sasie-emerald/20 text-sasie-emerald/60'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
-                      </svg>
-                    </button>
-                    <button onClick={() => openEditGuest(guest)} className="p-2 rounded-lg bg-sasie-mocca/10 hover:bg-sasie-mocca/20 text-sasie-mocca transition-colors">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button onClick={() => handleDeleteGuest(guest.id, guest.name)} className="p-2 rounded-lg bg-sasie-marun/10 hover:bg-sasie-marun/20 text-sasie-marun transition-colors">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                       </svg>
                     </button>
                   </div>
                 </div>
+
+                {/* Status Badges Row */}
+                <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                  {guest.status === 'checked_in' && (
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-sasie-emerald/20 text-sasie-emerald border border-sasie-emerald/40 font-medium">
+                      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Checked In
+                    </span>
+                  )}
+                  {guest.invitationSent && (
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-300 font-medium">
+                      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
+                      </svg>
+                      Dikirim
+                    </span>
+                  )}
+                  {guest.rsvpStatus && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${
+                      guest.rsvpStatus === 'confirmed' ? 'bg-sasie-emerald/20 text-sasie-emerald border-sasie-emerald/40' :
+                      guest.rsvpStatus === 'declined' ? 'bg-sasie-marun/20 text-sasie-marun border-sasie-marun/40' :
+                      guest.rsvpStatus === 'maybe' ? 'bg-sasie-gold/20 text-sasie-gold border-sasie-gold/40' :
+                      'bg-sasie-milo/20 text-sasie-milo border-sasie-milo/40'
+                    }`}>
+                      {guest.rsvpStatus === 'confirmed' ? '✓ Hadir' :
+                       guest.rsvpStatus === 'declined' ? '✗ Tidak' :
+                       guest.rsvpStatus === 'maybe' ? '?' : 'Pending'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Expanded Menu */}
+                {expandedGuestId === guest.id && (
+                  <div className="mt-2 pt-2 border-t border-sasie-dove/30 animate-fade-in">
+                    <div className="grid grid-cols-4 gap-1.5">
+                      <button
+                        onClick={() => { openEditGuest(guest); toggleGuestMenu(guest.id); }}
+                        className="flex flex-col items-center gap-1 p-1.5 rounded-lg bg-sasie-mocca/10 hover:bg-sasie-mocca/20 text-sasie-mocca transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span className="text-[9px] font-medium leading-tight">Edit</span>
+                      </button>
+                      <button
+                        onClick={() => { handleShareInvitation(guest); toggleGuestMenu(guest.id); }}
+                        className="flex flex-col items-center gap-1 p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        <span className="text-[9px] font-medium leading-tight">Share</span>
+                      </button>
+                      <button
+                        onClick={() => { handleMarkInvitationSent(guest); }}
+                        className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-colors ${
+                          guest.invitationSent
+                            ? 'bg-sasie-emerald/10 hover:bg-sasie-emerald/20 text-sasie-emerald'
+                            : 'bg-sasie-milo/10 hover:bg-sasie-milo/20 text-sasie-milo'
+                        }`}
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
+                        </svg>
+                        <span className="text-[9px] font-medium leading-tight">
+                          {guest.invitationSent ? 'Dikirim' : 'Tandai'}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => { handleDeleteGuest(guest.id, guest.name); }}
+                        className="flex flex-col items-center gap-1 p-1.5 rounded-lg bg-sasie-marun/10 hover:bg-sasie-marun/20 text-sasie-marun transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span className="text-[9px] font-medium leading-tight">Hapus</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

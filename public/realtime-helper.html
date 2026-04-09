@@ -3,98 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Realtime Helper - SASIENALA</title>
+  <title>Cara Alternatif - Realtime Supabase</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      background: linear-gradient(135deg, #D4AF37 0%, #C4A030 100%);
       min-height: 100vh;
       padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .container {
       max-width: 700px;
-      margin: 0 auto;
+      width: 100%;
     }
     .card {
       background: white;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .icon {
+      font-size: 64px;
       margin-bottom: 20px;
+      text-align: center;
     }
     h1 {
       color: #D4AF37;
-      font-size: 28px;
-      margin-bottom: 8px;
+      font-size: 26px;
+      margin-bottom: 12px;
+      text-align: center;
     }
     .subtitle {
       color: #666;
-      margin-bottom: 24px;
-    }
-    .status-box {
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
       font-size: 15px;
-      line-height: 1.6;
-    }
-    .status-box.checking {
-      background: #fff3cd;
-      color: #856404;
-      border: 2px solid #ffc107;
-    }
-    .status-box.success {
-      background: #d4edda;
-      color: #155724;
-      border: 2px solid #28a745;
-    }
-    .status-box.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 2px solid #dc3545;
+      margin-bottom: 24px;
+      text-align: center;
     }
     .btn {
       display: inline-block;
       background: #D4AF37;
       color: white;
-      padding: 14px 28px;
-      border-radius: 10px;
+      padding: 16px 32px;
+      border-radius: 12px;
       text-decoration: none;
       font-weight: 600;
-      margin-right: 10px;
-      margin-bottom: 10px;
+      font-size: 16px;
       border: none;
       cursor: pointer;
-      font-size: 15px;
       transition: all 0.2s;
+      width: 100%;
+      margin-bottom: 12px;
     }
-    .btn:hover { background: #C4A030; transform: translateY(-2px); }
-    .btn-secondary { background: #2C3E50; }
-    .btn-secondary:hover { background: #34495e; }
+    .btn:hover {
+      background: #C4A030;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+    .btn-secondary {
+      background: #2C3E50;
+    }
+    .btn-secondary:hover {
+      background: #34495e;
+    }
     .steps {
       background: #f8f9fa;
-      padding: 20px;
       border-radius: 12px;
-      margin: 20px 0;
+      padding: 24px;
+      margin-top: 24px;
     }
     .steps h3 {
       color: #D4AF37;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      text-align: center;
       font-size: 18px;
     }
     .step {
-      margin: 14px 0;
-      padding-left: 32px;
-      position: relative;
-      color: #333;
+      display: flex;
+      align-items: flex-start;
+      margin: 20px 0;
     }
-    .step:before {
-      content: attr(data-num);
-      position: absolute;
-      left: 0;
-      width: 24px;
-      height: 24px;
+    .step-num {
+      width: 32px;
+      height: 32px;
       background: #D4AF37;
       color: white;
       border-radius: 50%;
@@ -102,242 +95,192 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 12px;
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-right: 16px;
     }
-    .code {
+    .step-content {
+      flex: 1;
+    }
+    .step-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+    .step-desc {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .schematic {
       background: #2d2d2d;
-      color: #f8f8f2;
-      padding: 16px;
-      border-radius: 8px;
-      font-family: 'Courier New', monospace;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+      color: #fff;
       font-size: 13px;
-      overflow-x: auto;
-      margin: 12px 0;
+      font-family: monospace;
     }
-    .logs {
-      background: #1a1a2e;
-      color: #00ff00;
+    .schematic-line {
+      margin: 8px 0;
+    }
+    .schematic-arrow {
+      color: #D4AF37;
+      margin-right: 8px;
+    }
+    .schematic-path {
+      color: #f8f8f2;
+    }
+    .schematic-highlight {
+      color: #6bcb77;
+      font-weight: bold;
+    }
+    .note {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
       padding: 16px;
       border-radius: 8px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      max-height: 200px;
-      overflow-y: auto;
-      margin-top: 16px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #155724;
     }
-    .log-entry { margin: 4px 0; }
-    .log-error { color: #ff6b6b; }
-    .log-warn { color: #ffd93d; }
-    .log-info { color: #6bcb77; }
+    .note strong {
+      display: block;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <h1>🔄 Realtime Sync Checker</h1>
-      <p class="subtitle">Cek apakah Realtime Supabase sudah aktif untuk tabel <code>guests</code></p>
+      <div class="icon">🗺️</div>
+      <h1>Navigasi ke Realtime Settings</h1>
+      <p class="subtitle">Lokasi Realtime di Supabase Dashboard</p>
 
-      <div id="status" class="status-box checking">
-        ⏳ Menyiapkan pengecekan...
+      <div class="steps">
+        <h3>📍 Cara 1: Lewat Database</h3>
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Klik "Database" di sidebar</div>
+            <div class="step-desc">
+              Di sidebar kiri, cari dan klik menu <strong>Database</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Cari tab "Replication" di atas</div>
+            <div class="step-desc">
+              Di halaman Database, ada tabs di atas. Klik tab <strong>Replication</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Pastikan "Realtime" toggle ON</div>
+            <div class="step-desc">
+              Di section Realtime replication, pastikan toggle <strong>Enable Realtime</strong> dalam posisi <strong>ON (hijau)</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="schematic">
+          <div class="schematic-line">
+            <span class="schematic-arrow">▸</span>
+            <span class="schematic-path">Sidebar → <span class="schematic-highlight">Database</span></span>
+          </div>
+          <div class="schematic-line">
+            <span class="schematic-arrow">▸</span>
+            <span class="schematic-path">Tab atas → <span class="schematic-highlight">Replication</span></span>
+          </div>
+          <div class="schematic-line">
+            <span class="schematic-arrow">▸</span>
+            <span class="schematic-path">Section → <span class="schematic-highlight">Realtime</span> → Toggle <span class="schematic-highlight">ON</span></span>
+          </div>
+        </div>
       </div>
 
-      <div id="instructions" class="steps" style="display: none;">
-        <h3>📋 Cara Mengaktifkan Realtime</h3>
-        <div class="step" data-num="1">
-          <strong>Buka Supabase Dashboard</strong> → Klik tombol di bawah
+      <div class="steps" style="margin-top: 30px;">
+        <h3>📍 Cara 2: Lewat Project Settings</h3>
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Klik logo project di atas kiri</div>
+            <div class="step-desc">
+              "Sasienala" → pilih <strong>Project Settings</strong>
+            </div>
+          </div>
         </div>
-        <div class="step" data-num="2">
-          <strong>Pergi ke Database → Replication</strong>
-          <br><small>Di menu sidebar kiri, pilih "Database" lalu "Replication"</small>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Pilih "Database" di settings</div>
+            <div class="step-desc">
+              Di menu settings kiri, klik <strong>Database</strong>
+            </div>
+          </div>
         </div>
-        <div class="step" data-num="3">
-          <strong>Cari "guests" table</strong>
-          <br><small>Di bagian "Tables to replicate", cari tabel <code>guests</code></small>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Cari "Realtime" section</div>
+            <div class="step-desc">
+              Scroll ke bawah sampai menemukan <strong>Realtime</strong> settings
+            </div>
+          </div>
         </div>
-        <div class="step" data-num="4">
-          <strong>Enable Realtime</strong>
-          <br><small>Klik toggle switch untuk mengaktifkan realtime pada tabel <code>guests</code></small>
-        </div>
-        <div class="step" data-num="5">
-          <strong>Kembali ke sini dan klik "Cek Ulang"</strong>
+
+        <div class="schematic">
+          <div class="schematic-line">
+            <span class="schematic-arrow">▸</span>
+            <span class="schematic-path">Klik logo <span class="schematic-highlight">Sasienala</span> → <span class="schematic-highlight">Project Settings</span></span>
+          </div>
+          <div class="schematic-line">
+            <span class="schematic-arrow">▸</span>
+            <span class="schematic-path">Menu kiri → <span class="schematic-highlight">Database</span></span>
+          </div>
+          <div class="schematic-line">
+            <span class="schematic-arrow">▸</span>
+            <span class="schematic-path">Scroll → Section <span class="schematic-highlight">Realtime</span></span>
+          </div>
         </div>
       </div>
 
-      <div style="margin-top: 24px;">
+      <div style="margin-top: 30px;">
         <a href="https://supabase.com/dashboard/project/mrkjatwshfnldnfutuov/database/replication" target="_blank" class="btn">
-          🚀 Buka Supabase Replication Settings
+          🚀 Buka Database → Replication (Langsung)
         </a>
-        <button onclick="checkRealtime()" class="btn btn-secondary">
-          🔄 Cek Ulang
-        </button>
-        <button onclick="testSubscription()" class="btn btn-secondary" id="testBtn" style="display: none;">
-          🧪 Test Live Subscription
-        </button>
+
+        <a href="https://supabase.com/dashboard/project/mrkjatwshfnldnfutuov/settings/database" target="_blank" class="btn btn-secondary">
+          ⚙️ Buka Project Settings → Database
+        </a>
+
+        <a href="https://sasy-event.vercel.app" target="_blank" class="btn btn-secondary">
+          ↗️ Buka Aplikasi untuk Test
+        </a>
       </div>
 
-      <div id="logs" class="logs" style="display: none;"></div>
+      <div class="note">
+        <strong>✅ Status saat ini:</strong><br>
+        • Tabel <strong>guests</strong> SUDAH ditambahkan ke Realtime publication<br>
+        • Yang perlu: Enable Realtime <strong>server/infrastructure</strong> di project level
+      </div>
+
+      <div style="margin-top: 16px; padding: 16px; background: #fff3cd; border-radius: 12px; font-size: 13px; color: #856404;">
+        <strong>⚠️ Jika tetap tidak ketemu:</strong><br>
+        Supabase mungkin mengubah UI lagi. Coba cari "Realtime" di search box (Ctrl+K) di dashboard, atau contact support Supabase.
+      </div>
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = 'https://mrkjatwshfnldnfutuov.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_cHFEhHIqlBuqLb9gcy0ztg_uI_cQZE8';
-    let supabase = null;
-    let testChannel = null;
-
-    function log(message, type = 'info') {
-      const logsDiv = document.getElementById('logs');
-      logsDiv.style.display = 'block';
-      const entry = document.createElement('div');
-      entry.className = `log-entry log-${type}`;
-      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-      logsDiv.appendChild(entry);
-      logsDiv.scrollTop = logsDiv.scrollHeight;
-    }
-
-    async function checkRealtime() {
-      const statusDiv = document.getElementById('status');
-      const instructionsDiv = document.getElementById('instructions');
-      const logsDiv = document.getElementById('logs');
-
-      logsDiv.style.display = 'none';
-      logsDiv.innerHTML = '';
-      instructionsDiv.style.display = 'none';
-      document.getElementById('testBtn').style.display = 'none';
-
-      statusDiv.className = 'status-box checking';
-      statusDiv.innerHTML = '⏳ Mengecek koneksi ke Supabase...';
-
-      try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        log('Supabase client initialized', 'info');
-
-        statusDiv.innerHTML = '⏳ Mengecek struktur tabel guests...';
-
-        // Cek apakah tabel guests ada
-        const { data: tables, error: tablesError } = await supabase
-          .from('guests')
-          .select('*')
-          .limit(1);
-
-        log('Query ke tabel guests: ' + (tablesError ? 'FAILED' : 'OK'), tablesError ? 'error' : 'info');
-
-        if (tablesError) {
-          statusDiv.className = 'status-box error';
-          statusDiv.innerHTML = '❌ <strong>Gagal mengakses tabel guests</strong><br>' + tablesError.message;
-          return;
-        }
-
-        statusDiv.innerHTML = '⏳ Menguji koneksi Realtime...';
-
-        // Test realtime connection
-        testChannel = supabase
-          .channel('test-realtime-' + Date.now())
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'guests'
-            },
-            (payload) => {
-              log('🎉 Menerima pesan realtime: ' + JSON.stringify(payload), 'info');
-            }
-          )
-          .subscribe((status) => {
-            log('Subscription status: ' + status, status === 'SUBSCRIBED' ? 'info' : 'warn');
-
-            if (status === 'SUBSCRIBED') {
-              statusDiv.className = 'status-box success';
-              statusDiv.innerHTML = '✅ <strong>REALTIME SUDAH AKTIF!</strong><br>Sinkronisasi antar device akan berjalan otomatis.';
-              document.getElementById('testBtn').style.display = 'inline-block';
-
-              setTimeout(() => {
-                if (testChannel) {
-                  supabase.removeChannel(testChannel);
-                  log('Test subscription closed', 'info');
-                }
-              }, 2000);
-            } else if (status === 'CHANNEL_ERROR') {
-              statusDiv.className = 'status-box error';
-              statusDiv.innerHTML = '❌ <strong>REALTIME TIDAK AKTIF</strong><br>Tabel <code>guests</code> belum di-enable untuk Realtime.<br><br>Ikuti langkah-langkah di bawah ini:';
-              instructionsDiv.style.display = 'block';
-            } else if (status === 'TIMED_OUT') {
-              statusDiv.className = 'status-box error';
-              statusDiv.innerHTML = '❌ <strong>CONNECTION TIMEOUT</strong><br>Koneksi realtime timeout. Pastikan internet stabil.<br><br>Ikuti langkah-langkah di bawah ini:';
-              instructionsDiv.style.display = 'block';
-            }
-          });
-
-        log('Mengirim subscription request...', 'info');
-
-        // Timeout after 10 seconds
-        setTimeout(() => {
-          if (statusDiv.classList.contains('checking')) {
-            statusDiv.className = 'status-box error';
-            statusDiv.innerHTML = '❌ <strong>TIMEOUT</strong><br>Tidak mendapatkan respon dari server Realtime.<br><br>Kemungkinan Realtime belum diaktifkan. Ikuti langkah-langkah di bawah:';
-            instructionsDiv.style.display = 'block';
-            if (testChannel) {
-              supabase.removeChannel(testChannel);
-            }
-          }
-        }, 10000);
-
-      } catch (error) {
-        log('Error: ' + error.message, 'error');
-        statusDiv.className = 'status-box error';
-        statusDiv.innerHTML = '❌ <strong>ERROR:</strong><br>' + error.message;
-      }
-    }
-
-    async function testSubscription() {
-      log('=== Mulai Live Subscription Test ===', 'info');
-      log('Buka aplikasi di device lain dan buat perubahan...', 'info');
-
-      const statusDiv = document.getElementById('status');
-      statusDiv.className = 'status-box checking';
-      statusDiv.innerHTML = '⏳ <strong>Listening untuk changes...</strong><br>Buka app di device lain dan tandai tamu sebagai "Sudah Dikirim"';
-
-      let received = false;
-
-      testChannel = supabase
-        .channel('live-test-' + Date.now())
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'guests'
-          },
-          (payload) => {
-            received = true;
-            log('🎉🎉🎉 CHANGE DETECTED! 🎉🎉🎉', 'info');
-            log('Event: ' + payload.eventType, 'info');
-            log('Data: ' + JSON.stringify(payload.new), 'info');
-
-            statusDiv.className = 'status-box success';
-            statusDiv.innerHTML = '✅ <strong>REALTIME BERHASIL!</strong><br>Perubahan dari device lain terdeteksi otomatis!';
-          }
-        )
-        .subscribe((status) => {
-          log('Subscription status: ' + status, 'info');
-        });
-
-      // Stop after 30 seconds
-      setTimeout(() => {
-        supabase.removeChannel(testChannel);
-        if (!received) {
-          statusDiv.className = 'status-box error';
-          statusDiv.innerHTML = '❌ <strong>Tidak ada perubahan terdeteksi dalam 30 detik</strong><br>Pastikan Anda membuat perubahan di device lain.';
-        }
-      }, 30000);
-    }
-
-    // Auto-check on load
-    window.onload = () => {
-      setTimeout(checkRealtime, 500);
-    };
-  </script>
 </body>
 </html>

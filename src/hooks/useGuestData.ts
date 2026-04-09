@@ -21,7 +21,7 @@ export const useGuestData = () => {
     loadData();
   }, []);
 
-  // Real-time sync for Supabase
+  // Real-time sync for Supabase with polling fallback
   useEffect(() => {
     if (!isSupabaseConfigured()) {
       console.log('[Realtime] Supabase not configured, skipping real-time sync');
@@ -30,7 +30,11 @@ export const useGuestData = () => {
 
     console.log('[Realtime] Setting up real-time sync for guests table...');
 
-    const channel = supabase
+    let channel: any = null;
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    // Setup Realtime subscription
+    channel = supabase
       .channel('guests-changes-' + Date.now())
       .on(
         'postgres_changes',
@@ -42,8 +46,6 @@ export const useGuestData = () => {
         async (payload: any) => {
           console.log('[Realtime] 🎉 Update received:', payload);
           console.log('[Realtime] Event type:', payload.eventType);
-          console.log('[Realtime] Old record:', payload.old);
-          console.log('[Realtime] New record:', payload.new);
           // Reload all guests when changes occur
           const updated = await getGuests();
           setGuests(updated);
@@ -52,18 +54,29 @@ export const useGuestData = () => {
       .subscribe((status: any) => {
         console.log('[Realtime] Subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] ✅ Successfully subscribed to guests table changes');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('[Realtime] ❌ Channel error - Realtime may not be enabled in Supabase Dashboard');
-          console.error('[Realtime] Go to: Database > Replication > Enable "guests" table');
-        } else if (status === 'TIMED_OUT') {
-          console.error('[Realtime] ⏱️ Connection timed out');
+          console.log('[Realtime] ✅ Successfully subscribed - Instant sync active');
+          // Clear polling if realtime works
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+          }
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[Realtime] ⚠️ Connection failed - Polling every 3 seconds...');
+          // Start polling as fallback
+          if (!pollingInterval) {
+            pollingInterval = setInterval(async () => {
+              console.log('[Polling] Refreshing data...');
+              const updated = await getGuests();
+              setGuests(updated);
+            }, 3000); // Poll every 3 seconds
+          }
         }
       });
 
     return () => {
       console.log('[Realtime] Cleaning up subscription');
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
+      if (pollingInterval) clearInterval(pollingInterval);
     };
   }, []);
 

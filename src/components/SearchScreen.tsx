@@ -61,8 +61,8 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
           </svg>
         </button>
         <div className="text-center">
-          <h2 className="text-lg font-medium text-sasie-mocca tracking-wide">Guest Check-In</h2>
-          <p className="text-xs text-sasie-milo/60 tracking-wider">WELCOME</p>
+          <h2 className="text-sm font-medium text-sasie-mocca tracking-wide">Guest Check-In</h2>
+          <p className="text-[10px] text-sasie-milo/60 tracking-wider">WELCOME</p>
         </div>
         <div className="w-12"></div>
       </div>
@@ -82,10 +82,10 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
             </div>
           </div>
 
-          <h3 className="text-3xl font-light text-sasie-mocca mb-3 tracking-wide">
+          <h3 className="text-2xl font-light text-sasie-mocca mb-3 tracking-wide">
             Selamat Datang
           </h3>
-          <p className="text-sasie-milo/70 mb-8">Silakan cari nama Anda untuk check-in</p>
+          <p className="text-sasie-milo/70 mb-8 text-sm">Silakan cari nama Anda untuk check-in</p>
 
           {/* Premium Info Cards */}
           <div className="glass-card p-5 space-y-3 text-left">
@@ -135,7 +135,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama Anda..."
-              className="input-field w-full pl-12 py-4 text-lg bg-white/90 backdrop-blur-sm border-sasie-dove/50 shadow-sm"
+              className="input-field w-full pl-12 py-3 text-base bg-white/90 backdrop-blur-sm border-sasie-dove/50 shadow-sm"
               autoFocus
             />
             {searchQuery && (
@@ -159,7 +159,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
             ? 'bg-gradient-to-r from-sasie-emerald/20 to-sasie-sage/20 border border-sasie-emerald/50 text-sasie-emerald shadow-sasie-emerald/10'
             : 'bg-gradient-to-r from-sasie-marun/20 to-sasie-terracotta/20 border border-sasie-marun/50 text-sasie-marun shadow-sasie-marun/10'
         }`}>
-          <p className="text-lg font-medium">{message.text}</p>
+          <p className="text-sm font-medium">{message.text}</p>
         </div>
       )}
 
@@ -173,7 +173,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-sasie-milo/60 text-lg">Nama tidak ditemukan</p>
+              <p className="text-sasie-milo/60 text-base">Nama tidak ditemukan</p>
               <p className="text-sasie-milo/40 text-sm mt-2">Silakan hubungi panitia</p>
             </div>
           ) : (
@@ -196,7 +196,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
 
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <h3 className={`font-semibold text-lg mb-2 ${
+                      <h3 className={`font-semibold text-base mb-2 ${
                         guest.status === 'checked_in' ? 'text-sasie-emerald' : 'text-sasie-mocca'
                       }`}>
                         {guest.name}

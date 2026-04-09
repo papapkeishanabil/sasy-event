@@ -103,7 +103,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
         <div className="flex items-center justify-center gap-3">
           <div className="h-px w-12 bg-sasie-milo/20"></div>
           <p className="text-center text-sasie-milo/40 text-xs tracking-wider">
-            SASIENALA × WARDAH
+            SASIENALA
           </p>
           <div className="h-px w-12 bg-sasie-milo/20"></div>
         </div>

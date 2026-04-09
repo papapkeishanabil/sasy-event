@@ -119,8 +119,8 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
           </svg>
         </button>
         <div className="text-center">
-          <h2 className="text-xl font-medium text-sasie-mocca">Operator Dashboard</h2>
-          <p className="text-xs text-sasie-milo/70">Panel Pantauan Tamu</p>
+          <h2 className="text-sm font-medium text-sasie-mocca">Operator Dashboard</h2>
+          <p className="text-[10px] text-sasie-milo/70">Panel Pantauan Tamu</p>
         </div>
         <div className="w-10"></div>
       </div>
@@ -131,42 +131,42 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
           {/* Main Stats */}
           <div className="grid grid-cols-4 gap-2 text-center mb-3">
             <div>
-              <p className="text-2xl font-bold text-sasie-mocca">{guests.length}</p>
-              <p className="text-xs text-sasie-milo/70">Total</p>
+              <p className="text-xl font-bold text-sasie-mocca">{guests.length}</p>
+              <p className="text-[10px] text-sasie-milo/70">Total</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-sasie-emerald">{checkedCount}</p>
-              <p className="text-xs text-sasie-milo/70">Hadir</p>
+              <p className="text-xl font-bold text-sasie-emerald">{checkedCount}</p>
+              <p className="text-[10px] text-sasie-milo/70">Hadir</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-sasie-gold">{vipCheckedCount}/{vipTotalCount}</p>
-              <p className="text-xs text-sasie-milo/70">VIP</p>
+              <p className="text-xl font-bold text-sasie-gold">{vipCheckedCount}/{vipTotalCount}</p>
+              <p className="text-[10px] text-sasie-milo/70">VIP</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-sasie-terracotta">{pendingCount}</p>
-              <p className="text-xs text-sasie-milo/70">Pending</p>
+              <p className="text-xl font-bold text-sasie-terracotta">{pendingCount}</p>
+              <p className="text-[10px] text-sasie-milo/70">Pending</p>
             </div>
           </div>
 
           {/* RSVP Stats */}
           <div className="border-t border-sasie-dove/50 pt-3">
-            <p className="text-xs text-sasie-milo/70 text-center mb-2">Status RSVP</p>
+            <p className="text-[10px] text-sasie-milo/70 text-center mb-2">Status RSVP</p>
             <div className="grid grid-cols-4 gap-2 text-center">
               <div>
-                <p className="text-lg font-bold text-sasie-emerald">{rsvpConfirmed}</p>
-                <p className="text-xs text-sasie-milo/70">Hadir</p>
+                <p className="text-base font-bold text-sasie-emerald">{rsvpConfirmed}</p>
+                <p className="text-[10px] text-sasie-milo/70">Hadir</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-sasie-gold">{rsvpMaybe}</p>
-                <p className="text-xs text-sasie-milo/70">Ragu</p>
+                <p className="text-base font-bold text-sasie-gold">{rsvpMaybe}</p>
+                <p className="text-[10px] text-sasie-milo/70">Ragu</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-sasie-marun">{rsvpDeclined}</p>
-                <p className="text-xs text-sasie-milo/70">Tidak</p>
+                <p className="text-base font-bold text-sasie-marun">{rsvpDeclined}</p>
+                <p className="text-[10px] text-sasie-milo/70">Tidak</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-sasie-milo">{rsvpPending}</p>
-                <p className="text-xs text-sasie-milo/70">Blm</p>
+                <p className="text-base font-bold text-sasie-milo">{rsvpPending}</p>
+                <p className="text-[10px] text-sasie-milo/70">Blm</p>
               </div>
             </div>
           </div>
@@ -185,8 +185,8 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
             }`}
           >
-            <div className="text-lg font-bold">{guests.length}</div>
-            <div className="text-xs opacity-80">SEMUA</div>
+            <div className="text-base font-bold">{guests.length}</div>
+            <div className="text-[10px] opacity-80">SEMUA</div>
           </button>
 
           <button
@@ -197,8 +197,8 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-emerald/50'
             }`}
           >
-            <div className="text-lg font-bold">{checkedCount}</div>
-            <div className="text-xs opacity-80">CHECK-IN</div>
+            <div className="text-base font-bold">{checkedCount}</div>
+            <div className="text-[10px] opacity-80">CHECK-IN</div>
           </button>
 
           <button
@@ -291,7 +291,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
         </div>
 
         {/* Result Count */}
-        <p className="text-sasie-milo text-sm mt-2 text-center">
+        <p className="text-sasie-milo text-xs mt-2 text-center">
           {filteredGuests.length} tamu ditampilkan
         </p>
       </div>
@@ -339,7 +339,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                     {/* Name with VIP badge */}
                     <div className="flex items-center gap-2">
                       <h3
-                        className={`font-semibold truncate ${
+                        className={`font-semibold text-base truncate ${
                           guest.status === 'checked_in'
                             ? 'text-sasie-emerald'
                             : guest.rsvpStatus === 'confirmed'
@@ -350,7 +350,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                         {guest.name}
                       </h3>
                       {guest.category === 'VIP' && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40 flex-shrink-0">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sasie-gold/20 text-sasie-bronze border border-sasie-gold/40 flex-shrink-0">
                           VIP
                         </span>
                       )}
