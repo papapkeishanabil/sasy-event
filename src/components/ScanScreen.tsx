@@ -33,7 +33,14 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           { facingMode: cameraMode },
           {
             fps: 30,
-            qrbox: 400,
+            qrbox: (scanRegionWidth, scanRegionHeight) => {
+              // Use 80% of the smaller dimension for maximum scanning range
+              const size = Math.min(scanRegionWidth, scanRegionHeight) * 0.8;
+              return {
+                width: size,
+                height: size
+              };
+            },
           },
           (decodedText) => {
             handleScanSuccess(decodedText);
