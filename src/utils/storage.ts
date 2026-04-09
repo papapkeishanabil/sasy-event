@@ -37,6 +37,8 @@ const mapDbToGuest = (dbGuest: any): Guest => ({
   phone: dbGuest.phone,
   rsvpStatus: dbGuest.rsvp_status,
   rsvpResponseTime: dbGuest.rsvp_response_time,
+  invitationSent: dbGuest.invitation_sent,
+  invitationSentTime: dbGuest.invitation_sent_time,
 });
 
 const mapGuestToDb = (guest: Guest) => ({
@@ -49,6 +51,8 @@ const mapGuestToDb = (guest: Guest) => ({
   phone: guest.phone,
   rsvp_status: guest.rsvpStatus,
   rsvp_response_time: guest.rsvpResponseTime,
+  invitation_sent: guest.invitationSent,
+  invitation_sent_time: guest.invitationSentTime,
 });
 
 /**
@@ -303,22 +307,33 @@ export const updateGuest = async (
   const guestIndex = guests.findIndex(g => g.id === guestId);
 
   if (guestIndex !== -1) {
-    guests[guestIndex] = { ...guests[guestIndex], ...updates };
+    // Create updated guest object
+    const updatedGuest = { ...guests[guestIndex], ...updates };
+    guests[guestIndex] = updatedGuest;
 
     if (isSupabaseConfigured()) {
       try {
-        const dbUpdate = mapGuestToDb(guests[guestIndex]);
+        const dbUpdate = mapGuestToDb(updatedGuest);
         console.log('Updating guest in Supabase:', guestId, dbUpdate);
-        const { error } = await supabase
+
+        // Update Supabase and wait for confirmation with response data
+        const { data, error } = await supabase
           .from('guests')
           .update(dbUpdate)
-          .eq('id', guestId);
+          .eq('id', guestId)
+          .select()
+          .single();
 
         if (error) {
           console.error('Supabase error updating guest:', error);
           throw error;
         }
-        console.log('Guest updated successfully');
+        console.log('Guest updated successfully, confirmed data:', data);
+
+        // Use the confirmed data from Supabase to ensure consistency
+        if (data) {
+          guests[guestIndex] = mapDbToGuest(data);
+        }
       } catch (error) {
         console.error('Error updating guest:', error);
         throw error;
