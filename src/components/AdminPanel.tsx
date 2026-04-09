@@ -12,8 +12,9 @@ interface AdminPanelProps {
   onBack: () => void;
   onInvitationBuilder?: () => void;
   onAddGuest?: (guest: Omit<Guest, 'id'>) => Promise<Guest[]>;
-  onUpdateGuest?: (guestId: number, updates: Partial<Omit<Guest, 'id'>>) => void;
+  onUpdateGuest?: (guestId: number, updates: Partial<Omit<Guest, "id">>) => void;
   onDeleteGuest?: (guestId: number) => void;
+  onRefresh?: () => Promise<void>;
 }
 
 type AdminView = 'dashboard' | 'guests' | 'add-guest' | 'edit-guest' | 'categories';
@@ -27,7 +28,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onInvitationBuilder,
   onAddGuest,
   onUpdateGuest,
-  onDeleteGuest
+  onDeleteGuest,
+  onRefresh
 }) => {
   const [currentView, setCurrentView] = useState<AdminView>('dashboard');
   const [uploading, setUploading] = useState(false);
@@ -570,7 +572,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </svg>
           </button>
           <h2 className="text-xl font-medium text-sasie-mocca">Admin Panel</h2>
-          <div className="w-10"></div>
+          {onRefresh && (
+            <button
+              onClick={() => onRefresh()}
+              className="p-2 rounded-full bg-white border border-sasie-dove hover:border-sasie-gold hover:bg-sasie-gold/10 transition-colors"
+              title="Sinkron Data"
+            >
+              <svg className="w-5 h-5 text-sasie-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Error */}

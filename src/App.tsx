@@ -14,7 +14,7 @@ import RsvpPage from './components/RsvpPage';
 import InvitationBuilder from './components/InvitationBuilder';
 
 function App() {
-  const { guests, stats, checkInGuest, resetAll, importGuests, addGuest, updateGuest, deleteGuest } = useGuestData();
+  const { guests, stats, checkInGuest, resetAll, importGuests, addGuest, updateGuest, deleteGuest, refreshData } = useGuestData();
   const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest, rsvpGuestId, navigateToRsvp } = useScreen();
 
   // Check URL parameters for RSVP access
@@ -91,6 +91,7 @@ function App() {
             onAddGuest={addGuest}
             onUpdateGuest={updateGuest}
             onDeleteGuest={deleteGuest}
+            onRefresh={refreshData}
           />
         )}
 
