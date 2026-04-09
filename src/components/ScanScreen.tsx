@@ -190,21 +190,21 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
       </div>
 
       {/* Scanner */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="relative w-full max-w-md">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
+        <div className="relative w-full max-w-2xl aspect-[4/3]">
           <div
-            className="rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
+            className="w-full h-full rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
           >
-            <div id={scanRegionId} />
+            <div id={scanRegionId} className="w-full h-full" />
           </div>
 
           {/* Scan overlay */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="scan-line" />
-            <div className="absolute top-0 left-0 w-16 h-16 border-l-4 border-t-4 border-sasie-gold rounded-tl-3xl" />
-            <div className="absolute top-0 right-0 w-16 h-16 border-r-4 border-t-4 border-sasie-gold rounded-tr-3xl" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 border-l-4 border-b-4 border-sasie-gold rounded-bl-3xl" />
-            <div className="absolute bottom-0 right-0 w-16 h-16 border-r-4 border-b-4 border-sasie-gold rounded-br-3xl" />
+            <div className="absolute top-0 left-0 w-20 h-20 border-l-4 border-t-4 border-sasie-gold rounded-tl-3xl" />
+            <div className="absolute top-0 right-0 w-20 h-20 border-r-4 border-t-4 border-sasie-gold rounded-tr-3xl" />
+            <div className="absolute bottom-0 left-0 w-20 h-20 border-l-4 border-b-4 border-sasie-gold rounded-bl-3xl" />
+            <div className="absolute bottom-0 right-0 w-20 h-20 border-r-4 border-b-4 border-sasie-gold rounded-br-3xl" />
           </div>
         </div>
 
