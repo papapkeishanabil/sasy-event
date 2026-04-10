@@ -217,21 +217,16 @@ export default function InvitationBuilder({ onBack }: InvitationBuilderProps) {
 
     const message = encodeURIComponent(
       `Halo *${guest.name}*,\n\n` +
-      `You Are Invited To ✨\n\n` +
+      `We would love to personally invite you to ✨\n\n` +
       `*${mainTitle}*\n` +
       (subTitle ? `_${subTitle}_\n\n` : `\n`) +
-      `We would love to personally invite you to be part of a special moment with us.\n\n` +
-      `*${mainTitle}:*\n` +
-      `*${subTitle || event.description || ''}*\n\n` +
-      `${event.description || ''}\n\n` +
-      `📅 *Date*\n${event.date}\n\n` +
-      `⏰ *Time*\n${event.time}\n\n` +
-      `📍 *Location*\n${event.location}\n\n` +
-      `${event.locationAddress || ''}\n\n` +
-      `━━━━━━━━━━━━━━━━\n` +
-      `Silakan konfirmasi kehadiran Anda melalui link undangan digital berikut:\n\n` +
+      `A special gathering celebrating individuality & self-expression.\n\n` +
+      `📅 *${event.date}*\n` +
+      `📍 *${event.location}*\n\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `Your personal invitation awaits:\n\n` +
       `${link}\n\n` +
-      `Mohon konfirmasi secepatnya. Terima kasih! 🙏`
+      `Please confirm your attendance by clicking the link above 🙏`
     );
 
     const phone = guest.phone?.replace(/^0/, '62') || '';
