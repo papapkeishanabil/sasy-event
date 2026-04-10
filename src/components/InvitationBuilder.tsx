@@ -196,17 +196,42 @@ export default function InvitationBuilder({ onBack }: InvitationBuilderProps) {
 
   const openWhatsAppInvite = (guest: Guest) => {
     const link = generateInvitationLink(guest.id);
+
+    // Parse event title to get main title and subtitle
+    const getEventTitleParts = (fullTitle: string) => {
+      // Try to split by × or :
+      let parts = fullTitle.split('×');
+      if (parts.length === 1) {
+        parts = fullTitle.split(':');
+      }
+      if (parts.length > 1) {
+        return {
+          main: parts[0].trim(),
+          sub: parts[1].trim()
+        };
+      }
+      return { main: fullTitle, sub: '' };
+    };
+
+    const { main: mainTitle, sub: subTitle } = getEventTitleParts(event.title);
+
     const message = encodeURIComponent(
-      `Halo ${guest.name},\n\n` +
-      `Kami dengan hangat mengundang Anda untuk menghadiri:\n\n` +
-      `✨ ${event.title} ✨\n` +
-      `📅 ${event.date}\n` +
-      `⏰ ${event.time}\n` +
-      `📍 ${event.location}\n` +
-      `${event.locationAddress ? `\n${event.locationAddress}\n` : ''}\n\n` +
-      `Silakan konfirmasi kehadiran Anda melalui link undangan digital berikut:\n` +
+      `Halo *${guest.name}*,\n\n` +
+      `You Are Invited To ✨\n\n` +
+      `*${mainTitle}*\n` +
+      (subTitle ? `_${subTitle}_\n\n` : `\n`) +
+      `We would love to personally invite you to be part of a special moment with us.\n\n` +
+      `*${mainTitle}:*\n` +
+      `*${subTitle || event.description || ''}*\n\n` +
+      `${event.description || ''}\n\n` +
+      `📅 *Date*\n${event.date}\n\n` +
+      `⏰ *Time*\n${event.time}\n\n` +
+      `📍 *Location*\n${event.location}\n\n` +
+      `${event.locationAddress || ''}\n\n` +
+      `━━━━━━━━━━━━━━━━\n` +
+      `Silakan konfirmasi kehadiran Anda melalui link undangan digital berikut:\n\n` +
       `${link}\n\n` +
-      `Mohon konfirmasi secepatnya. Terima kasih!`
+      `Mohon konfirmasi secepatnya. Terima kasih! 🙏`
     );
 
     const phone = guest.phone?.replace(/^0/, '62') || '';
