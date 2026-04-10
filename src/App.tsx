@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useGuestData } from './hooks/useGuestData';
 import { useScreen } from './hooks/useScreen';
 
@@ -16,20 +15,6 @@ import InvitationBuilder from './components/InvitationBuilder';
 function App() {
   const { guests, stats, checkInGuest, resetAll, importGuests, addGuest, updateGuest, deleteGuest, refreshData } = useGuestData();
   const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest, rsvpGuestId, navigateToRsvp } = useScreen();
-
-  // Check URL parameters for RSVP access
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const rsvpParam = urlParams.get('rsvp');
-    const guestIdParam = urlParams.get('guestId');
-
-    if (rsvpParam === 'true' && guestIdParam) {
-      const guestId = parseInt(guestIdParam, 10);
-      if (!isNaN(guestId)) {
-        navigateToRsvp(guestId);
-      }
-    }
-  }, [navigateToRsvp]);
 
   const handleCheckIn = async (guestId: number) => {
     const result = await checkInGuest(guestId);

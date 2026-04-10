@@ -16,11 +16,34 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
     if (!searchQuery.trim()) {
       return []; // Empty when no search - privacy first
     }
-    const query = searchQuery.toLowerCase();
-    return guests.filter(guest =>
-      guest.name.toLowerCase().includes(query) ||
-      guest.id.toString().includes(query)
+    const query = searchQuery.toLowerCase().trim();
+
+    // Prioritize exact matches, then partial matches
+    const exactMatches = guests.filter(guest =>
+      guest.name.toLowerCase() === query
     );
+
+    // If exact match found, only show that (for privacy)
+    if (exactMatches.length > 0) {
+      return exactMatches;
+    }
+
+    // For partial matches, require minimum 3 characters
+    if (query.length < 3) {
+      return [];
+    }
+
+    // Partial match - but only show if few results to avoid listing too many names
+    const partialMatches = guests.filter(guest =>
+      guest.name.toLowerCase().includes(query)
+    );
+
+    // If more than 3 partial matches, don't show any (too many = privacy issue)
+    if (partialMatches.length > 3) {
+      return [];
+    }
+
+    return partialMatches;
   }, [guests, searchQuery]);
 
   const handleCheckIn = async (guest: Guest) => {
@@ -95,7 +118,7 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <p className="text-sasie-mocca text-sm">Ketik nama lengkap Anda</p>
+              <p className="text-sasie-mocca text-sm">Ketik nama Anda</p>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-sasie-emerald/20 flex items-center justify-center flex-shrink-0">

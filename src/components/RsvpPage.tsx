@@ -34,11 +34,15 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
   const [showDeclined, setShowDeclined] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
 
+  console.log('[RsvpPage] Component mounted with guestId:', guestId);
+
   useEffect(() => {
     // Load event data FIRST, then guest data
     const loadAllData = async () => {
+      console.log('[RsvpPage] Loading data for guestId:', guestId);
       await loadEventData();
       await loadGuestData();
+      console.log('[RsvpPage] Data loaded, guest:', guest);
     };
     loadAllData();
   }, [guestId]);
@@ -142,10 +146,14 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
 
   const loadGuestData = async () => {
     try {
+      console.log('[RsvpPage] loadGuestData called with guestId:', guestId);
       if (guestId) {
         const { getGuestById } = await import('../utils/storage');
         const foundGuest = await getGuestById(guestId);
+        console.log('[RsvpPage] Guest found:', foundGuest);
         setGuest(foundGuest);
+      } else {
+        console.warn('[RsvpPage] No guestId provided!');
       }
     } catch (error) {
       console.error('Error loading guest:', error);
