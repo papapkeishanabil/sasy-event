@@ -14,7 +14,7 @@ import InvitationBuilder from './components/InvitationBuilder';
 
 function App() {
   const { guests, stats, checkInGuest, resetAll, importGuests, addGuest, updateGuest, deleteGuest, refreshData } = useGuestData();
-  const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest, rsvpGuestId, navigateToRsvp } = useScreen();
+  const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest, rsvpGuestId } = useScreen();
 
   const handleCheckIn = async (guestId: number) => {
     const result = await checkInGuest(guestId);
