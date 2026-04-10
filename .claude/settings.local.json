@@ -94,7 +94,8 @@
       "Bash(awk 'NR==236 {skip} NR==237 {skip} {print}' public/qr-download.html)",
       "Bash(mv temp.html public/qr-download.html)",
       "Bash(ls -d */)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npx serve:*)"
     ]
   }
 }

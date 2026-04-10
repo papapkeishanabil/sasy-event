@@ -194,7 +194,7 @@ export default function InvitationBuilder({ onBack }: InvitationBuilderProps) {
     alert(`Link untuk ${selectedGuests.length} tamu berhasil disalin!`);
   };
 
-  const openWhatsAppInvite = (guest: Guest) => {
+  const openWhatsAppInvite = async (guest: Guest) => {
     const link = generateInvitationLink(guest.id);
 
     // Parse event title to get main title and subtitle
@@ -215,26 +215,45 @@ export default function InvitationBuilder({ onBack }: InvitationBuilderProps) {
 
     const { main: mainTitle, sub: subTitle } = getEventTitleParts(event.title);
 
-    const message = encodeURIComponent(
-      `Halo *${guest.name}*,\n\n` +
+    // Use native share for better emoji rendering
+    const shareText = `Halo *${guest.name}*,\n\n` +
       `We would love to personally invite you to ✨\n\n` +
       `*${mainTitle}*\n` +
       (subTitle ? `_${subTitle}_\n\n` : `\n`) +
       `A special gathering celebrating individuality & self-expression.\n\n` +
       `📅 *${event.date}*\n` +
+      (event.time ? `⏰ *${event.time}*\n` : '') +
       `📍 *${event.location}*\n\n` +
       `━━━━━━━━━━━━━━━━\n\n` +
       `Your personal invitation awaits:\n\n` +
       `${link}\n\n` +
-      `Please confirm your attendance by clicking the link above 🙏`
-    );
+      `Please confirm your attendance by clicking the link above 🙏`;
 
-    const phone = guest.phone?.replace(/^0/, '62') || '';
-    const url = phone
-      ? `https://wa.me/${phone}?text=${message}`
-      : `https://wa.me/?text=${message}`;
-
-    window.open(url, '_blank');
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: shareText
+        });
+      } catch (error) {
+        // User cancelled or error, fallback to WhatsApp direct
+        console.log('Share cancelled or error, using fallback:', error);
+        const phone = guest.phone?.replace(/^0/, '62') || '';
+        const message = encodeURIComponent(shareText);
+        const url = phone
+          ? `https://wa.me/${phone}?text=${message}`
+          : `https://wa.me/?text=${message}`;
+        window.open(url, '_blank');
+      }
+    } else {
+      // Fallback for browsers without native share
+      const phone = guest.phone?.replace(/^0/, '62') || '';
+      const message = encodeURIComponent(shareText);
+      const url = phone
+        ? `https://wa.me/${phone}?text=${message}`
+        : `https://wa.me/?text=${message}`;
+      window.open(url, '_blank');
+    }
   };
 
   const sendBulkWhatsApp = () => {

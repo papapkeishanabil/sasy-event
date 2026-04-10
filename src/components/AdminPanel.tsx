@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Guest, CheckInStats, Category } from '../types';
+import { Guest, CheckInStats, Category, Event } from '../types';
 import { parseCSV, downloadCSV } from '../utils/csvParser';
 import { generateQRPdf, generateQRCode } from '../utils/qrGenerator';
 import { clearAllData, getCategories, addCategory, updateCategoryAndSyncGuests, deleteCategory, getGuests } from '../utils/storage';
+import { supabase, isSupabaseConfigured } from '../utils/supabase';
 
 interface AdminPanelProps {
   guests: Guest[];
@@ -60,10 +61,57 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     display_order: 0,
   });
 
+  // Event state for invitation template
+  const [event, setEvent] = useState<Event>({
+    id: 'sasie-event-2024',
+    title: 'SASIENALA × WARDAH',
+    description: '',
+    date: 'Minggu, 14 April 2024',
+    time: '10:00 - 15:00 WIB',
+    location: 'Sasie Nala Boutique',
+    locationLat: -6.2088,
+    locationLng: 106.8456,
+    locationAddress: '',
+    imageUrl: ''
+  });
+
   // Load categories on mount
   useEffect(() => {
     loadCategories();
+    loadEventData();
   }, []);
+
+  const loadEventData = async () => {
+    // Try loading from Supabase first
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', 'default')
+          .single();
+
+        if (data && !error) {
+          const loadedEvent: Event = {
+            id: data.id,
+            title: data.title,
+            description: data.description || '',
+            date: data.date,
+            time: data.time,
+            location: data.location,
+            locationLat: data.location_lat,
+            locationLng: data.location_lng,
+            locationAddress: data.location_address || '',
+            imageUrl: data.image_url || '',
+          };
+          setEvent(loadedEvent);
+          console.log('Event config loaded from Supabase');
+        }
+      } catch (error) {
+        console.error('Error loading event from Supabase:', error);
+      }
+    }
+  };
 
   const loadCategories = async () => {
     setLoadingCategories(true);
@@ -319,15 +367,46 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Share invitation link for guest
   const handleShareInvitation = async (guest: Guest) => {
-    const inviteUrl = `${window.location.origin}?rsvp=true&guestId=${guest.id}`;
-    const shareText = `Halo ${guest.name},\n\nAnda diundang ke acara spesial SASIENALA × WARDAH!\n\nSilakan konfirmasi kehadiran Anda melalui link berikut:\n${inviteUrl}`;
+    const baseUrl = window.location.origin + window.location.pathname;
+    const inviteUrl = `${baseUrl}?rsvp=true&guestId=${guest.id}`;
+
+    // Use event data from state (loaded from Supabase)
+    // Parse event title to get main title and subtitle
+    const getEventTitleParts = (fullTitle: string) => {
+      let parts = fullTitle.split('×');
+      if (parts.length === 1) {
+        parts = fullTitle.split('x');
+      }
+      if (parts.length > 1) {
+        return {
+          main: parts[0].trim(),
+          sub: parts[1].trim()
+        };
+      }
+      return { main: fullTitle, sub: '' };
+    };
+
+    const { main: mainTitle, sub: subTitle } = getEventTitleParts(event.title);
+
+    // Use same template as InvitationBuilder
+    const shareText = `Halo *${guest.name}*,\n\n` +
+      `We would love to personally invite you to ✨\n\n` +
+      `*${mainTitle}*\n` +
+      (subTitle ? `_${subTitle}_\n\n` : `\n`) +
+      `A special gathering celebrating individuality & self-expression.\n\n` +
+      `📅 *${event.date}*\n` +
+      (event.time ? `⏰ *${event.time}*\n` : '') +
+      `📍 *${event.location}*\n\n` +
+      `━━━━━━━━━━━━━━━━\n\n` +
+      `Your personal invitation awaits:\n\n` +
+      `${inviteUrl}\n\n` +
+      `Please confirm your attendance by clicking the link above 🙏`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Undangan SASIENALA × WARDAH',
-          text: shareText,
-          url: inviteUrl
+          title: event.title,
+          text: shareText
         });
       } catch (error) {
         // User cancelled or error
@@ -335,11 +414,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       }
     } else {
       // Fallback: copy to clipboard
-      navigator.clipboard.writeText(inviteUrl).then(() => {
-        setSuccessMessage('Link undangan disalin ke clipboard!');
+      navigator.clipboard.writeText(shareText).then(() => {
+        setSuccessMessage('Template undangan disalin ke clipboard!');
         setTimeout(() => setSuccessMessage(''), 3000);
       }).catch(() => {
-        setError('Gagal menyalin link');
+        setError('Gagal menyalin template');
       });
     }
   };
@@ -578,7 +657,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-medium text-sasie-mocca">Admin Panel</h2>
+          <h2 className="text-base font-medium text-sasie-mocca">Admin Panel</h2>
           {onRefresh && (
             <button
               onClick={() => onRefresh()}
@@ -601,22 +680,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Quick Stats */}
         <div className="glass-card p-6 mb-6">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-4">Current Data</h3>
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">Current Data</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-3xl font-bold text-sasie-mocca">{guests.length}</p>
+              <p className="text-xl font-bold text-sasie-mocca">{guests.length}</p>
               <p className="text-sm text-sasie-milo/70">Total Guests</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-sasie-emerald">{stats.checkedIn}</p>
+              <p className="text-xl font-bold text-sasie-emerald">{stats.checkedIn}</p>
               <p className="text-sm text-sasie-milo/70">Checked In</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-sasie-gold">{stats.vipTotal}</p>
+              <p className="text-xl font-bold text-sasie-gold">{stats.vipTotal}</p>
               <p className="text-sm text-sasie-milo/70">VIP Guests</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-sasie-terracotta">{guests.filter(g => g.category === 'Speaker').length}</p>
+              <p className="text-xl font-bold text-sasie-terracotta">{guests.filter(g => g.category === 'Speaker').length}</p>
               <p className="text-sm text-sasie-milo/70">Speakers</p>
             </div>
           </div>
@@ -624,14 +703,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Invitation Tracking Stats */}
         <div className="glass-card p-6 mb-6">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-4">Tracking Undangan</h3>
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">Tracking Undangan</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-3xl font-bold text-sasie-marun">{invitationsNotSent}</p>
+              <p className="text-xl font-bold text-sasie-marun">{invitationsNotSent}</p>
               <p className="text-sm text-sasie-milo/70">Belum Dikirim</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-sasie-emerald">{invitationsSent}</p>
+              <p className="text-xl font-bold text-sasie-emerald">{invitationsSent}</p>
               <p className="text-sm text-sasie-milo/70">Sudah Dikirim</p>
             </div>
           </div>
@@ -703,7 +782,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Import Section */}
         <div className="glass-card p-6 mb-4">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-4">Import Guests</h3>
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">Import Guests</h3>
           <p className="text-sasie-milo/70 text-sm mb-4">
             Upload a CSV file with columns: Name, Category (VIP/Regular/Media/Speaker), Email, Phone
           </p>
@@ -727,7 +806,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* QR Code Section */}
         <div className="glass-card p-6 mb-4">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-4">QR Codes</h3>
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">QR Codes</h3>
           <div className="space-y-3">
             <button onClick={handleGeneratePDF} disabled={generating || guests.length === 0} className="btn-secondary w-full flex items-center justify-center gap-2">
               {generating ? (
@@ -749,7 +828,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Digital Invitation Section */}
         <div className="glass-card p-6 mb-4 border-2 border-emerald-200">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-2">📧 Undangan Digital</h3>
+          <h3 className="text-base font-medium text-sasie-mocca mb-2">📧 Undangan Digital</h3>
           <p className="text-sasie-milo/70 text-sm mb-4">Buat undangan digital, kirim via WhatsApp, dan lacak RSVP</p>
           <button onClick={onInvitationBuilder} className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -761,7 +840,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Data Management */}
         <div className="glass-card p-6 mb-4">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-4">Data Management</h3>
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">Data Management</h3>
           <div className="space-y-3">
             <button onClick={handleExportCSV} className="btn-secondary w-full flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -803,7 +882,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-medium text-sasie-mocca">Daftar Tamu</h2>
+          <h2 className="text-base font-medium text-sasie-mocca">Daftar Tamu</h2>
           <button onClick={() => setCurrentView('add-guest')} className="p-2 rounded-full bg-sasie-emerald hover:bg-sasie-emerald/90 text-white transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -1028,7 +1107,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-medium text-sasie-mocca">Tambah Tamu Baru</h2>
+          <h2 className="text-base font-medium text-sasie-mocca">Tambah Tamu Baru</h2>
           <div className="w-10"></div>
         </div>
 
@@ -1120,7 +1199,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-medium text-sasie-mocca">Edit Data Tamu</h2>
+          <h2 className="text-base font-medium text-sasie-mocca">Edit Data Tamu</h2>
           <div className="w-10"></div>
         </div>
 
@@ -1211,7 +1290,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-medium text-sasie-mocca">Kelola Kategori</h2>
+          <h2 className="text-base font-medium text-sasie-mocca">Kelola Kategori</h2>
           <button
             onClick={() => {
               resetCategoryForm();
@@ -1241,7 +1320,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Add/Edit Category Form */}
         <div className="glass-card p-6 mb-4">
-          <h3 className="text-lg font-medium text-sasie-mocca mb-4">
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">
             {editingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru'}
           </h3>
 
@@ -1398,7 +1477,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-medium text-sasie-mocca">Edit Data Tamu</h2>
+          <h2 className="text-base font-medium text-sasie-mocca">Edit Data Tamu</h2>
           <div className="w-10"></div>
         </div>
 
