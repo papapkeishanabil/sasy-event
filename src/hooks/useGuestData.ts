@@ -187,10 +187,13 @@ export const useGuestData = () => {
     return updated;
   };
 
+  // Only count CONFIRMED guests for main stats (exclude pending and declined)
+  const confirmedGuests = guests.filter(g => g.rsvpStatus === 'confirmed');
+
   const stats: CheckInStats = {
-    total: guests.length,
-    checkedIn: guests.filter(g => g.status === 'checked_in').length,
-    remaining: guests.filter(g => g.status === 'not_checked_in').length,
+    total: confirmedGuests.length,
+    checkedIn: confirmedGuests.filter(g => g.status === 'checked_in').length,
+    remaining: confirmedGuests.filter(g => g.status === 'not_checked_in').length,
     vipCheckedIn: guests.filter(g => g.category === 'VIP' && g.status === 'checked_in').length,
     vipTotal: guests.filter(g => g.category === 'VIP').length,
   };

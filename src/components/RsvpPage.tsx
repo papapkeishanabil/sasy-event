@@ -32,6 +32,7 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
   const [opened, setOpened] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [showDeclined, setShowDeclined] = useState(false);
+  const [showCheckedIn, setShowCheckedIn] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
 
   console.log('[RsvpPage] Component mounted with guestId:', guestId);
@@ -152,6 +153,13 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         const foundGuest = await getGuestById(guestId);
         console.log('[RsvpPage] Guest found:', foundGuest);
         setGuest(foundGuest);
+
+        // If guest is already checked in, show checked-in state
+        if (foundGuest && foundGuest.status === 'checked_in') {
+          console.log('[RsvpPage] Guest already checked in, showing celebration...');
+          setShowCheckedIn(true);
+          setShowQr(false);
+        }
       } else {
         console.warn('[RsvpPage] No guestId provided!');
       }
@@ -161,6 +169,95 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
       setLoading(false);
     }
   };
+
+  // Real-time subscription for check-in status changes
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !guestId) {
+      console.log('[RsvpPage] Supabase not configured or no guestId, skipping real-time');
+      return;
+    }
+
+    console.log('[RsvpPage] Setting up real-time subscription for guest:', guestId);
+
+    let channel: any = null;
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    // Setup Realtime subscription
+    channel = supabase
+      .channel('guest-checkin-' + guestId + '-' + Date.now())
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'guests',
+          filter: `id=eq.${guestId}`
+        },
+        async (payload: any) => {
+          console.log('[RsvpPage] Guest update received:', payload);
+
+          // Reload guest data to get latest state
+          const { getGuestById } = await import('../utils/storage');
+          const foundGuest = await getGuestById(guestId);
+          if (foundGuest) {
+            console.log('[RsvpPage] Guest data reloaded:', foundGuest);
+            setGuest(foundGuest);
+
+            // Use the payload data to check if guest just checked in
+            const wasCheckedIn = payload.old?.status === 'checked_in';
+            const isCheckedIn = foundGuest.status === 'checked_in';
+
+            // If guest just checked in (was not checked in before, but is now)
+            if (isCheckedIn && !wasCheckedIn) {
+              console.log('[RsvpPage] Guest checked in! Showing celebration...');
+              setShowQr(false);
+              setShowCheckedIn(true);
+            }
+          }
+        }
+      )
+      .subscribe((status: any) => {
+        console.log('[RsvpPage] Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('[RsvpPage] ✅ Real-time check-in monitoring active');
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+          }
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[RsvpPage] ⚠️ Realtime failed - using polling every 3 seconds...');
+          if (!pollingInterval) {
+            pollingInterval = setInterval(async () => {
+              console.log('[RsvpPage] Polling for guest updates...');
+              const { getGuestById } = await import('../utils/storage');
+              const foundGuest = await getGuestById(guestId);
+              if (foundGuest) {
+                // Use functional state update to get the current guest status
+                setGuest((prevGuest) => {
+                  const prevStatus = prevGuest?.status;
+                  const isCheckedIn = foundGuest.status === 'checked_in';
+
+                  // If guest just checked in, show checked-in celebration state
+                  if (isCheckedIn && prevStatus !== 'checked_in') {
+                    console.log('[RsvpPage] Guest checked in via polling! Showing celebration...');
+                    setShowQr(false);
+                    setShowCheckedIn(true);
+                  }
+
+                  return foundGuest;
+                });
+              }
+            }, 3000);
+          }
+        }
+      });
+
+    return () => {
+      console.log('[RsvpPage] Cleaning up real-time subscription');
+      if (channel) supabase.removeChannel(channel);
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
+  }, [guestId]);
 
   const handleOpenInvitation = () => {
     setOpened(true);
@@ -1025,6 +1122,55 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           </section>
         )}
 
+        {/* Checked In Section - Show after guest scans QR code at entrance */}
+        {showCheckedIn && guest && (
+          <section className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-sasie-gold/40 p-5 sm:p-6 md:p-8 text-center animate-scale-in">
+            {/* Checkmark Animation */}
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6">
+              <div className="absolute inset-0 rounded-full gold-gradient animate-pulse-glow"></div>
+              <div className="absolute inset-1 rounded-full bg-white flex items-center justify-center">
+                <svg className="w-10 h-10 sm:w-12 sm:h-12 text-sasie-gold checkmark-animate" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            <h3 className="font-elegant text-2xl sm:text-3xl font-bold text-sasie-gold mb-2">Welcome!</h3>
+            <p className="text-mahogany-brown text-xl sm:text-2xl font-medium mb-1">{guest.name}</p>
+
+            {/* Category Badge */}
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mt-3 sm:mt-4 ${
+              guest.category === 'VIP'
+                ? 'bg-sasie-gold/20 border border-sasie-gold text-sasie-bronze'
+                : 'bg-sasie-dove border border-sasie-mocca/30 text-sasie-mocca'
+            }`}>
+              <span className="text-sm font-medium">{guest.category}</span>
+              {guest.category === 'VIP' && (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              )}
+            </div>
+
+            {/* Check-in Time */}
+            {guest.checkInTime && (
+              <p className="text-sage-green/60 text-xs sm:text-sm mt-3 sm:mt-4">
+                Checked in at {new Date(guest.checkInTime).toLocaleTimeString('id-ID', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            )}
+
+            {/* Sparkles */}
+            <div className="mt-4 sm:mt-6 text-sasie-gold text-2xl sm:text-3xl tracking-wider">✨</div>
+
+            <p className="text-sage-green/70 text-sm sm:text-base mt-4 sm:mt-6">
+              You're all set! Please proceed to the event area.
+            </p>
+          </section>
+        )}
+
         {/* Declined Section */}
         {showDeclined && (
           <section className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-dusty-rose/30 p-5 sm:p-6 md:p-8 text-center animate-scale-in">
@@ -1039,11 +1185,11 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
         )}
 
         {/* Already Responded (from previous visit) */}
-        {guest && guest.rsvpStatus && !showQr && !showDeclined && (
+        {guest && guest.rsvpStatus && !showQr && !showDeclined && !showCheckedIn && (
           <section className="bg-white/80 backdrop-blur-sm rounded-2xl border border-blush-pink-dark/30 p-5 sm:p-6 md:p-8 text-center">
             <p className="text-sage-green/70 text-sm sm:text-base">You've already responded.</p>
             <p className="text-mahogany-brown font-medium mt-2">Status: <span className={`px-2 py-1 rounded-full text-xs ${getRsvpStatusColor(guest.rsvpStatus)}`}>{getRsvpStatusText(guest.rsvpStatus)}</span></p>
-            {guest.rsvpStatus === 'confirmed' && (
+            {guest.rsvpStatus === 'confirmed' && !showCheckedIn && (
               <button
                 onClick={() => setShowQr(true)}
                 className="mt-3 sm:mt-4 px-4 sm:px-6 py-2 bg-mahogany-brown hover:bg-mahogany-dark text-white rounded-xl text-xs sm:text-sm font-medium transition"
@@ -1059,6 +1205,26 @@ export default function RsvpPage({ guestId }: RsvpPageProps) {
           <p className="text-sage-green/40 text-[10px] sm:text-xs">© 2026 SASIENALA</p>
         </footer>
       </div>
+
+      {/* Inline Styles for Animations */}
+      <style>{`
+        @keyframes checkmarkDraw {
+          0% { stroke-dashoffset: 24; }
+          100% { stroke-dashoffset: 0; }
+        }
+        .checkmark-animate {
+          stroke-dasharray: 24;
+          stroke-dashoffset: 24;
+          animation: checkmarkDraw 0.5s ease-out forwards;
+        }
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-glow {
+          animation: pulseGlow 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

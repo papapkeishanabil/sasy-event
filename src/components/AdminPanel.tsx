@@ -42,6 +42,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Invitation tracking filter
   const [invitationFilter, setInvitationFilter] = useState<'all' | 'not_sent' | 'sent'>('all');
+  // Sort state
+  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'category' | 'checkin_time'>('name_asc');
   // QR Code Modal state
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrModalGuest, setQrModalGuest] = useState<Guest | null>(null);
@@ -605,19 +607,45 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  const filteredGuests = guests.filter(guest => {
-    // Search filter
-    const matchesSearch = searchQuery === '' ||
-      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.id.toString().includes(searchQuery);
+  const filteredGuests = (() => {
+    let result = guests.filter(guest => {
+      // Search filter
+      const matchesSearch = searchQuery === '' ||
+        guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        guest.id.toString().includes(searchQuery);
 
-    // Invitation filter
-    const matchesInvitation = invitationFilter === 'all' ||
-      (invitationFilter === 'sent' && guest.invitationSent) ||
-      (invitationFilter === 'not_sent' && !guest.invitationSent);
+      // Invitation filter
+      const matchesInvitation = invitationFilter === 'all' ||
+        (invitationFilter === 'sent' && guest.invitationSent) ||
+        (invitationFilter === 'not_sent' && !guest.invitationSent);
 
-    return matchesSearch && matchesInvitation;
-  });
+      return matchesSearch && matchesInvitation;
+    });
+
+    // Apply sorting
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case 'name_asc':
+          return a.name.localeCompare(b.name, 'id-ID');
+        case 'name_desc':
+          return b.name.localeCompare(a.name, 'id-ID');
+        case 'category':
+          return a.category.localeCompare(b.category);
+        case 'checkin_time':
+          // Sort by check-in time (checked-in guests first, then by time)
+          const aTime = a.checkInTime ? new Date(a.checkInTime).getTime() : 0;
+          const bTime = b.checkInTime ? new Date(b.checkInTime).getTime() : 0;
+          if (aTime === 0 && bTime === 0) return 0;
+          if (aTime === 0) return 1;
+          if (bTime === 0) return -1;
+          return bTime - aTime; // Most recent first
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  })();
 
   // Calculate invitation stats
   const invitationsNotSent = guests.filter(g => !g.invitationSent).length;
@@ -991,6 +1019,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             Sudah Dikirim ({invitationsSent})
+          </button>
+        </div>
+
+        {/* Sort Buttons */}
+        <div className="mb-3 flex gap-2">
+          <button
+            onClick={() => setSortBy('name_asc')}
+            className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all duration-200 text-sm ${
+              sortBy === 'name_asc'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            A-Z
+          </button>
+          <button
+            onClick={() => setSortBy('name_desc')}
+            className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all duration-200 text-sm ${
+              sortBy === 'name_desc'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            Z-A
+          </button>
+          <button
+            onClick={() => setSortBy('category')}
+            className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all duration-200 text-sm ${
+              sortBy === 'category'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            Kategori
+          </button>
+          <button
+            onClick={() => setSortBy('checkin_time')}
+            className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all duration-200 text-sm ${
+              sortBy === 'checkin_time'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            Waktu Check-in
           </button>
         </div>
 

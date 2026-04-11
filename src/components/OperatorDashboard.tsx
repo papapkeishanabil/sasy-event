@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Guest } from '../types';
 
 type FilterType = 'all' | 'checked_in' | 'not_checked_in' | 'rsvp_confirmed' | 'rsvp_pending' | 'rsvp_declined';
+type SortType = 'name_asc' | 'name_desc' | 'category' | 'checkin_time';
 
 interface OperatorDashboardProps {
   guests: Guest[];
@@ -13,16 +14,21 @@ interface OperatorDashboardProps {
 const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn, onUndoCheckIn, onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [sortBy, setSortBy] = useState<SortType>('name_asc');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const filteredGuests = useMemo(() => {
     let result = guests;
 
-    // Check-in filters
-    if (filter === 'checked_in') {
-      result = result.filter(g => g.status === 'checked_in');
+    // SEMUA filter: Only show CONFIRMED guests only (exclude pending and declined)
+    if (filter === 'all') {
+      result = result.filter(g => g.rsvpStatus === 'confirmed');
+    }
+    // Check-in filters (only from confirmed guests)
+    else if (filter === 'checked_in') {
+      result = result.filter(g => g.status === 'checked_in' && g.rsvpStatus === 'confirmed');
     } else if (filter === 'not_checked_in') {
-      result = result.filter(g => g.status === 'not_checked_in');
+      result = result.filter(g => g.status === 'not_checked_in' && g.rsvpStatus === 'confirmed');
     }
     // RSVP filters
     else if (filter === 'rsvp_confirmed') {
@@ -41,8 +47,30 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
       );
     }
 
+    // Apply sorting
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case 'name_asc':
+          return a.name.localeCompare(b.name, 'id-ID');
+        case 'name_desc':
+          return b.name.localeCompare(a.name, 'id-ID');
+        case 'category':
+          return a.category.localeCompare(b.category);
+        case 'checkin_time':
+          // Sort by check-in time (checked-in guests first, then by time)
+          const aTime = a.checkInTime ? new Date(a.checkInTime).getTime() : 0;
+          const bTime = b.checkInTime ? new Date(b.checkInTime).getTime() : 0;
+          if (aTime === 0 && bTime === 0) return 0;
+          if (aTime === 0) return 1;
+          if (bTime === 0) return -1;
+          return bTime - aTime; // Most recent first
+        default:
+          return 0;
+      }
+    });
+
     return result;
-  }, [guests, searchQuery, filter]);
+  }, [guests, searchQuery, filter, sortBy]);
 
   const handleCheckIn = async (guest: Guest) => {
     // Toggle: if already checked in, undo; if not, check in
@@ -101,9 +129,10 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
     }
   };
 
-  // Statistics
-  const checkedCount = guests.filter(g => g.status === 'checked_in').length;
-  const pendingCount = guests.filter(g => g.status === 'not_checked_in').length;
+  // Statistics - Only count CONFIRMED guests (exclude pending and declined)
+  const confirmedGuests = guests.filter(g => g.rsvpStatus === 'confirmed');
+  const checkedCount = confirmedGuests.filter(g => g.status === 'checked_in').length;
+  const pendingCount = confirmedGuests.filter(g => g.status === 'not_checked_in').length;
 
   // RSVP Statistics
   const rsvpConfirmed = guests.filter(g => g.rsvpStatus === 'confirmed').length;
@@ -141,7 +170,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
             }`}
           >
-            <div className="text-base font-bold">{guests.length}</div>
+            <div className="text-base font-bold">{confirmedGuests.length}</div>
             <div className="text-[10px] opacity-80">SEMUA</div>
           </button>
 
@@ -233,6 +262,50 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
               </svg>
             </button>
           )}
+        </div>
+
+        {/* Sort Buttons */}
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => setSortBy('name_asc')}
+            className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              sortBy === 'name_asc'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            A-Z
+          </button>
+          <button
+            onClick={() => setSortBy('name_desc')}
+            className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              sortBy === 'name_desc'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            Z-A
+          </button>
+          <button
+            onClick={() => setSortBy('category')}
+            className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              sortBy === 'category'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            Kategori
+          </button>
+          <button
+            onClick={() => setSortBy('checkin_time')}
+            className={`flex-1 py-1.5 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
+              sortBy === 'checkin_time'
+                ? 'bg-sasie-mocca text-white shadow-sm'
+                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
+            }`}
+          >
+            Waktu Check-in
+          </button>
         </div>
 
         {/* Result Count */}
