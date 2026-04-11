@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react';
 import { Guest } from '../types';
 
-type FilterType = 'all' | 'checked_in' | 'not_checked_in' | 'rsvp_confirmed' | 'rsvp_pending' | 'rsvp_declined' | 'rsvp_maybe';
+type FilterType = 'all' | 'checked_in' | 'not_checked_in' | 'rsvp_confirmed' | 'rsvp_pending' | 'rsvp_declined';
 
 interface OperatorDashboardProps {
   guests: Guest[];
   onCheckIn: (id: number) => Promise<{ success: boolean; alreadyCheckedIn: boolean }>;
+  onUndoCheckIn?: (id: number) => Promise<void>;
   onBack: () => void;
 }
 
-const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn, onBack }) => {
+const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn, onUndoCheckIn, onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -30,8 +31,6 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
       result = result.filter(g => !g.rsvpStatus || g.rsvpStatus === 'pending');
     } else if (filter === 'rsvp_declined') {
       result = result.filter(g => g.rsvpStatus === 'declined');
-    } else if (filter === 'rsvp_maybe') {
-      result = result.filter(g => g.rsvpStatus === 'maybe');
     }
 
     if (searchQuery.trim()) {
@@ -46,12 +45,23 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
   }, [guests, searchQuery, filter]);
 
   const handleCheckIn = async (guest: Guest) => {
-    const result = await onCheckIn(guest.id);
-
-    if (result.alreadyCheckedIn) {
-      setMessage({ type: 'error', text: `${guest.name} sudah check-in` });
+    // Toggle: if already checked in, undo; if not, check in
+    if (guest.status === 'checked_in') {
+      // Undo check-in
+      if (onUndoCheckIn) {
+        await onUndoCheckIn(guest.id);
+        setMessage({ type: 'success', text: `${guest.name} batal check-in` });
+      } else {
+        setMessage({ type: 'error', text: `Undo tidak tersedia` });
+      }
     } else {
-      setMessage({ type: 'success', text: `${guest.name} berhasil check-in!` });
+      // Check in
+      const result = await onCheckIn(guest.id);
+      if (result.alreadyCheckedIn) {
+        setMessage({ type: 'error', text: `${guest.name} sudah check-in` });
+      } else {
+        setMessage({ type: 'success', text: `${guest.name} berhasil check-in!` });
+      }
     }
 
     setTimeout(() => setMessage(null), 2000);
@@ -71,16 +81,14 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
     switch (status) {
       case 'confirmed': return 'bg-sasie-emerald/20 text-sasie-emerald border-sasie-emerald/40';
       case 'declined': return 'bg-sasie-marun/20 text-sasie-marun border-sasie-marun/40';
-      case 'maybe': return 'bg-sasie-gold/20 text-sasie-bronze border-sasie-gold/40';
       default: return 'bg-sasie-dove/30 text-sasie-milo border-sasie-dove';
     }
   };
 
   const getRsvpStatusText = (status?: string) => {
     switch (status) {
-      case 'confirmed': return 'Hadir';
+      case 'confirmed': return 'Konfirm';
       case 'declined': return 'Tidak';
-      case 'maybe': return 'Ragu';
       default: return 'Pending';
     }
   };
@@ -89,7 +97,6 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
     switch (status) {
       case 'confirmed': return '✓';
       case 'declined': return '✕';
-      case 'maybe': return '?';
       default: return '…';
     }
   };
@@ -97,14 +104,11 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
   // Statistics
   const checkedCount = guests.filter(g => g.status === 'checked_in').length;
   const pendingCount = guests.filter(g => g.status === 'not_checked_in').length;
-  const vipCheckedCount = guests.filter(g => g.category === 'VIP' && g.status === 'checked_in').length;
-  const vipTotalCount = guests.filter(g => g.category === 'VIP').length;
 
   // RSVP Statistics
   const rsvpConfirmed = guests.filter(g => g.rsvpStatus === 'confirmed').length;
   const rsvpPending = guests.filter(g => !g.rsvpStatus || g.rsvpStatus === 'pending').length;
   const rsvpDeclined = guests.filter(g => g.rsvpStatus === 'declined').length;
-  const rsvpMaybe = guests.filter(g => g.rsvpStatus === 'maybe').length;
 
   return (
     <div className="page-transition min-h-[calc(100vh-140px)] flex flex-col bg-sasie-cream">
@@ -123,54 +127,6 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
           <p className="text-[10px] text-sasie-milo/70">Panel Pantauan Tamu</p>
         </div>
         <div className="w-10"></div>
-      </div>
-
-      {/* Quick Stats - Enhanced with RSVP */}
-      <div className="px-4 mb-3">
-        <div className="glass-card p-4">
-          {/* Main Stats */}
-          <div className="grid grid-cols-4 gap-2 text-center mb-3">
-            <div>
-              <p className="text-xl font-bold text-sasie-mocca">{guests.length}</p>
-              <p className="text-[10px] text-sasie-milo/70">Total</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-sasie-emerald">{checkedCount}</p>
-              <p className="text-[10px] text-sasie-milo/70">Hadir</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-sasie-gold">{vipCheckedCount}/{vipTotalCount}</p>
-              <p className="text-[10px] text-sasie-milo/70">VIP</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-sasie-terracotta">{pendingCount}</p>
-              <p className="text-[10px] text-sasie-milo/70">Pending</p>
-            </div>
-          </div>
-
-          {/* RSVP Stats */}
-          <div className="border-t border-sasie-dove/50 pt-3">
-            <p className="text-[10px] text-sasie-milo/70 text-center mb-2">Status RSVP</p>
-            <div className="grid grid-cols-4 gap-2 text-center">
-              <div>
-                <p className="text-base font-bold text-sasie-emerald">{rsvpConfirmed}</p>
-                <p className="text-[10px] text-sasie-milo/70">Hadir</p>
-              </div>
-              <div>
-                <p className="text-base font-bold text-sasie-gold">{rsvpMaybe}</p>
-                <p className="text-[10px] text-sasie-milo/70">Ragu</p>
-              </div>
-              <div>
-                <p className="text-base font-bold text-sasie-marun">{rsvpDeclined}</p>
-                <p className="text-[10px] text-sasie-milo/70">Tidak</p>
-              </div>
-              <div>
-                <p className="text-base font-bold text-sasie-milo">{rsvpPending}</p>
-                <p className="text-[10px] text-sasie-milo/70">Blm</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Filter Buttons - Enhanced with RSVP */}
@@ -224,18 +180,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-emerald/50'
             }`}
           >
-            ✓ Hadir ({rsvpConfirmed})
-          </button>
-
-          <button
-            onClick={() => setFilter('rsvp_maybe')}
-            className={`flex-1 py-2 px-2 rounded-lg font-medium transition-all duration-200 text-xs ${
-              filter === 'rsvp_maybe'
-                ? 'bg-sasie-gold text-white shadow-sm'
-                : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
-            }`}
-          >
-            ? Ragu ({rsvpMaybe})
+            ✓ Konfirm ({rsvpConfirmed})
           </button>
 
           <button
@@ -246,7 +191,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-mocca/50'
             }`}
           >
-            … Blm ({rsvpPending})
+            … Pending ({rsvpPending})
           </button>
 
           <button
@@ -398,10 +343,11 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                               minute: '2-digit'
                             })}
                           </p>
+                          <p className="text-[9px] text-sasie-marun/70">Tap to undo</p>
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-sasie-emerald/20 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-sasie-marun/20 flex items-center justify-center">
                           <svg
-                            className="w-6 h-6 text-sasie-emerald"
+                            className="w-5 h-5 text-sasie-marun"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -409,8 +355,8 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2.5}
-                              d="M5 13l4 4L19 7"
+                              strokeWidth={2}
+                              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                             />
                           </svg>
                         </div>

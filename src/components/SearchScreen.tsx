@@ -4,10 +4,11 @@ import { Guest } from '../types';
 interface SearchScreenProps {
   guests: Guest[];
   onCheckIn: (id: number) => Promise<{ success: boolean; alreadyCheckedIn: boolean }>;
+  onUndoCheckIn?: (id: number) => Promise<void>;
   onBack: () => void;
 }
 
-const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }) => {
+const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onUndoCheckIn, onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -47,16 +48,27 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ guests, onCheckIn, onBack }
   }, [guests, searchQuery]);
 
   const handleCheckIn = async (guest: Guest) => {
-    const result = await onCheckIn(guest.id);
-
-    if (result.alreadyCheckedIn) {
-      setMessage({ type: 'error', text: `${guest.name} sudah check-in sebelumnya` });
+    // Toggle: if already checked in, undo; if not, check in
+    if (guest.status === 'checked_in') {
+      // Undo check-in
+      if (onUndoCheckIn) {
+        await onUndoCheckIn(guest.id);
+        setMessage({ type: 'success', text: `${guest.name} batal check-in` });
+      } else {
+        setMessage({ type: 'error', text: `Undo tidak tersedia` });
+      }
     } else {
-      setMessage({ type: 'success', text: `${guest.name} berhasil check-in!` });
-      // Clear search after successful check-in for privacy
-      setTimeout(() => {
-        setSearchQuery('');
-      }, 2000);
+      // Check in
+      const result = await onCheckIn(guest.id);
+      if (result.alreadyCheckedIn) {
+        setMessage({ type: 'error', text: `${guest.name} sudah check-in sebelumnya` });
+      } else {
+        setMessage({ type: 'success', text: `${guest.name} berhasil check-in!` });
+        // Clear search after successful check-in for privacy
+        setTimeout(() => {
+          setSearchQuery('');
+        }, 2000);
+      }
     }
 
     setTimeout(() => setMessage(null), 3000);

@@ -125,8 +125,44 @@ export const useGuestData = () => {
   };
 
   const importGuests = async (newGuests: Guest[]) => {
-    await saveGuests(newGuests);
-    setGuests(newGuests);
+    // Get existing guests
+    const existingGuests = await getGuests();
+
+    // Find max ID to assign new IDs
+    const maxId = existingGuests.length > 0
+      ? Math.max(...existingGuests.map(g => g.id))
+      : 0;
+
+    // Create a map of existing guests by name for deduplication
+    const existingGuestsMap = new Map(
+      existingGuests.map(g => [g.name.toLowerCase().trim(), g])
+    );
+
+    // Merge guests: keep existing, add new ones with new IDs
+    let mergedGuests = [...existingGuests];
+    let nextId = maxId + 1;
+    let addedCount = 0;
+
+    for (const newGuest of newGuests) {
+      const guestKey = newGuest.name.toLowerCase().trim();
+
+      // Skip if guest already exists (by name)
+      if (!existingGuestsMap.has(guestKey)) {
+        mergedGuests.push({
+          ...newGuest,
+          id: nextId++
+        });
+        addedCount++;
+      }
+    }
+
+    // Sort by ID
+    mergedGuests.sort((a, b) => a.id - b.id);
+
+    await saveGuests(mergedGuests);
+    setGuests(mergedGuests);
+
+    return addedCount; // Return number of guests actually added
   };
 
   const addGuest = async (guest: Omit<Guest, 'id'>) => {

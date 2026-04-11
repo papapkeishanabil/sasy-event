@@ -13,7 +13,7 @@ import RsvpPage from './components/RsvpPage';
 import InvitationBuilder from './components/InvitationBuilder';
 
 function App() {
-  const { guests, stats, checkInGuest, resetAll, importGuests, addGuest, updateGuest, deleteGuest, refreshData } = useGuestData();
+  const { guests, stats, checkInGuest, undoCheckIn, resetAll, importGuests, addGuest, updateGuest, deleteGuest, refreshData } = useGuestData();
   const { currentScreen, navigateTo, showSuccess, closeSuccess, successGuest, rsvpGuestId } = useScreen();
 
   const handleCheckIn = async (guestId: number) => {
@@ -45,6 +45,7 @@ function App() {
           <SearchScreen
             guests={guests}
             onCheckIn={handleCheckIn}
+            onUndoCheckIn={undoCheckIn}
             onBack={() => navigateTo('landing')}
           />
         )}
@@ -61,6 +62,7 @@ function App() {
           <OperatorDashboard
             guests={guests}
             onCheckIn={handleCheckIn}
+            onUndoCheckIn={undoCheckIn}
             onBack={() => navigateTo('landing')}
           />
         )}

@@ -8,7 +8,7 @@ import { supabase, isSupabaseConfigured } from '../utils/supabase';
 interface AdminPanelProps {
   guests: Guest[];
   stats: CheckInStats;
-  onImport: (guests: Guest[]) => void;
+  onImport: (guests: Guest[]) => Promise<number>;
   onReset: () => void;
   onBack: () => void;
   onInvitationBuilder?: () => void;
@@ -153,9 +153,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         throw new Error('No guests found in file');
       }
 
-      if (confirm(`Import ${parsedGuests.length} guests? This will replace existing data.`)) {
-        onImport(parsedGuests);
-        alert(`Successfully imported ${parsedGuests.length} guests`);
+      if (confirm(`Import ${parsedGuests.length} guests? Tamu yang sudah ada akan dilewati (tidak duplikat).`)) {
+        const addedCount = await onImport(parsedGuests);
+        const skippedCount = parsedGuests.length - addedCount;
+
+        if (skippedCount > 0) {
+          alert(`Berhasil! ${addedCount} tamu baru ditambahkan, ${skippedCount} tamu dilewati (sudah ada).\nTotal sekarang: ${guests.length + addedCount} tamu.`);
+        } else {
+          alert(`Berhasil! ${addedCount} tamu baru ditambahkan.\nTotal sekarang: ${guests.length + addedCount} tamu.`);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error parsing file');
@@ -350,6 +356,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Toggle guest menu
   const toggleGuestMenu = (guestId: number) => {
     setExpandedGuestId(expandedGuestId === guestId ? null : guestId);
+  };
+
+  // RSVP Status helpers
+  const getRsvpStatusColor = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/30';
+      case 'declined': return 'bg-rose-500/20 text-rose-600 border border-rose-500/30';
+      case 'maybe': return 'bg-amber-500/20 text-amber-600 border border-amber-500/30';
+      default: return 'bg-sasie-milo/20 text-sasie-milo border border-sasie-milo/40';
+    }
+  };
+
+  const getRsvpStatusText = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return 'Konfirm';
+      case 'declined': return 'Tidak';
+      case 'maybe': return 'Ragu';
+      default: return 'Pending';
+    }
+  };
+
+  const getRsvpStatusIcon = (status?: string) => {
+    switch (status) {
+      case 'confirmed': return '✓';
+      case 'declined': return '✕';
+      case 'maybe': return '?';
+      default: return '…';
+    }
   };
 
   // Show QR modal for existing guest
@@ -553,6 +587,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         ? `Undangan untuk ${guest.name} ditandai sebagai belum dikirim`
         : `Undangan untuk ${guest.name} ditandai sebagai sudah dikirim`
       );
+      setTimeout(() => setSuccessMessage(''), 3000);
+    }
+  };
+
+  const handleUpdateRsvpStatus = async (guest: Guest, newStatus: 'confirmed' | 'declined' | 'maybe' | undefined) => {
+    if (onUpdateGuest) {
+      const now = new Date().toISOString();
+      await onUpdateGuest(guest.id, {
+        rsvpStatus: newStatus,
+        rsvpResponseTime: newStatus ? now : undefined
+      });
+
+      const statusText = newStatus === 'confirmed' ? 'hadir' : newStatus === 'declined' ? 'tidak hadir' : newStatus === 'maybe' ? 'ragu-ragu' : 'dihapus';
+      setSuccessMessage(`RSVP ${guest.name} diubah menjadi: ${statusText}`);
       setTimeout(() => setSuccessMessage(''), 3000);
     }
   };
@@ -1009,16 +1057,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 {/* Status Badges Row */}
                 <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                  {guest.status === 'checked_in' && (
-                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-sasie-emerald/20 text-sasie-emerald border border-sasie-emerald/40 font-medium">
-                      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Checked In
-                    </span>
-                  )}
                   {guest.invitationSent && (
-                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-300 font-medium">
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-600 border border-blue-500/30 font-medium">
                       <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 2a6 6 0 00-6 6v6a6 6 0 006 6h6a6 6 0 006-6v-6a6 6 0 00-6-6h-6zm0 2a4 4 0 014 0v6a4 4 0 01-4 4h6a4 4 0 014-4v-6a4 4 0 00-4-0zm2 4a2 2 0 114 0 2 2 0 01-4 0z"/>
                       </svg>
@@ -1026,22 +1066,71 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </span>
                   )}
                   {guest.rsvpStatus && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${
-                      guest.rsvpStatus === 'confirmed' ? 'bg-sasie-emerald/20 text-sasie-emerald border-sasie-emerald/40' :
-                      guest.rsvpStatus === 'declined' ? 'bg-sasie-marun/20 text-sasie-marun border-sasie-marun/40' :
-                      guest.rsvpStatus === 'maybe' ? 'bg-sasie-gold/20 text-sasie-gold border-sasie-gold/40' :
-                      'bg-sasie-milo/20 text-sasie-milo border-sasie-milo/40'
-                    }`}>
-                      {guest.rsvpStatus === 'confirmed' ? '✓ Hadir' :
-                       guest.rsvpStatus === 'declined' ? '✗ Tidak' :
-                       guest.rsvpStatus === 'maybe' ? '?' : 'Pending'}
+                    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${getRsvpStatusColor(guest.rsvpStatus)}`}>
+                      <span>{getRsvpStatusIcon(guest.rsvpStatus)}</span>
+                      <span>RSVP: {getRsvpStatusText(guest.rsvpStatus)}</span>
+                    </span>
+                  )}
+                  {guest.status === 'checked_in' && (
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-600 border border-violet-500/30 font-medium">
+                      <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Checked In
                     </span>
                   )}
                 </div>
 
+                {/* RSVP Response Time */}
+                {guest.rsvpResponseTime && (
+                  <p className="text-[9px] text-sasie-milo/50 mt-1">
+                    Respon: {new Date(guest.rsvpResponseTime).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
+
                 {/* Expanded Menu */}
                 {expandedGuestId === guest.id && (
                   <div className="mt-2 pt-2 border-t border-sasie-dove/30 animate-fade-in">
+                    <div className="mb-2">
+                      <p className="text-[9px] text-sasie-milo/60 mb-1.5">Ubah Status RSVP:</p>
+                      <div className="grid grid-cols-3 gap-1">
+                        <button
+                          onClick={() => { handleUpdateRsvpStatus(guest, 'confirmed'); toggleGuestMenu(guest.id); }}
+                          className={`py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+                            guest.rsvpStatus === 'confirmed'
+                              ? 'bg-sasie-emerald text-white'
+                              : 'bg-sasie-emerald/10 hover:bg-sasie-emerald/20 text-sasie-emerald'
+                          }`}
+                        >
+                          ✓ Hadir
+                        </button>
+                        <button
+                          onClick={() => { handleUpdateRsvpStatus(guest, 'maybe'); toggleGuestMenu(guest.id); }}
+                          className={`py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+                            guest.rsvpStatus === 'maybe'
+                              ? 'bg-sasie-amber-500 text-white'
+                              : 'bg-sasie-amber-500/10 hover:bg-sasie-amber-500/20 text-sasie-amber-600'
+                          }`}
+                        >
+                          ? Ragu
+                        </button>
+                        <button
+                          onClick={() => { handleUpdateRsvpStatus(guest, 'declined'); toggleGuestMenu(guest.id); }}
+                          className={`py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+                            guest.rsvpStatus === 'declined'
+                              ? 'bg-sasie-rose-500 text-white'
+                              : 'bg-sasie-rose-500/10 hover:bg-sasie-rose-500/20 text-sasie-rose-600'
+                          }`}
+                        >
+                          ✕ Batal
+                        </button>
+                      </div>
+                    </div>
                     <div className="grid grid-cols-4 gap-1.5">
                       <button
                         onClick={() => { openEditGuest(guest); toggleGuestMenu(guest.id); }}
