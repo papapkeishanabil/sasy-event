@@ -42,6 +42,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Invitation tracking filter
   const [invitationFilter, setInvitationFilter] = useState<'all' | 'not_sent' | 'sent'>('all');
+  // RSVP tracking filter
+  const [rsvpFilter, setRsvpFilter] = useState<'all' | 'confirmed' | 'declined' | 'pending'>('all');
   // Sort state
   const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'category' | 'category_reverse' | 'checkin_time' | 'checkin_time_reverse'>('name_asc');
   // QR Code Modal state
@@ -622,7 +624,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         (invitationFilter === 'sent' && guest.invitationSent) ||
         (invitationFilter === 'not_sent' && !guest.invitationSent);
 
-      return matchesSearch && matchesInvitation;
+      // RSVP filter
+      const matchesRsvp = rsvpFilter === 'all' ||
+        (rsvpFilter === 'confirmed' && guest.rsvpStatus === 'confirmed') ||
+        (rsvpFilter === 'declined' && guest.rsvpStatus === 'declined') ||
+        (rsvpFilter === 'pending' && (!guest.rsvpStatus || guest.rsvpStatus === 'pending'));
+
+      return matchesSearch && matchesInvitation && matchesRsvp;
     });
 
     // Apply sorting
@@ -669,6 +677,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Calculate invitation stats
   const invitationsNotSent = guests.filter(g => !g.invitationSent).length;
   const invitationsSent = guests.filter(g => g.invitationSent).length;
+
+  // Calculate RSVP stats - ONLY for guests who were sent invitations
+  const invitedGuests = guests.filter(g => g.invitationSent);
+  const rsvpConfirmed = invitedGuests.filter(g => g.rsvpStatus === 'confirmed').length;
+  const rsvpDeclined = invitedGuests.filter(g => g.rsvpStatus === 'declined').length;
+  const rsvpPending = invitedGuests.filter(g => !g.rsvpStatus || g.rsvpStatus === 'pending').length;
 
   // QR Code Modal - Show this FIRST before any other view
   if (showQRModal && qrModalGuest && qrModalDataUrl) {
@@ -835,6 +849,35 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   ✅ Tandai {stats.checkedIn} Tamu Check-In sebagai "Sudah Dikirim"
                 </button>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* RSVP Tracking Stats */}
+        <div className="glass-card p-6 mb-6">
+          <h3 className="text-base font-medium text-sasie-mocca mb-4">Tracking RSVP</h3>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <p className="text-xl font-bold text-sasie-emerald">{rsvpConfirmed}</p>
+              <p className="text-xs text-sasie-milo/70">✓ Konfirm</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-sasie-dove">{rsvpPending}</p>
+              <p className="text-xs text-sasie-milo/70">… Pending</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-sasie-marun">{rsvpDeclined}</p>
+              <p className="text-xs text-sasie-milo/70">✕ Tidak</p>
+            </div>
+          </div>
+          {rsvpPending > 0 && (
+            <div className="mt-4 p-3 rounded-lg bg-sasie-dove/20 border border-sasie-dove/50">
+              <p className="text-sm text-sasie-milo flex items-center gap-2">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {rsvpPending} tamu belum merespons undangan
+              </p>
             </div>
           )}
         </div>
@@ -1008,7 +1051,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
 
         {/* Invitation Filter */}
-        <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <div className="mb-3 flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setInvitationFilter('all')}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -1038,6 +1081,51 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             Sudah Dikirim ({invitationsSent})
+          </button>
+        </div>
+
+        {/* RSVP Filter */}
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-sasie-milo/70 mr-1">RSVP:</span>
+          <button
+            onClick={() => setRsvpFilter('all')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              rsvpFilter === 'all'
+                ? 'bg-sasie-milo text-white'
+                : 'bg-white border border-sasie-milo/30 text-sasie-milo hover:bg-sasie-milo/10'
+            }`}
+          >
+            Semua
+          </button>
+          <button
+            onClick={() => setRsvpFilter('confirmed')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              rsvpFilter === 'confirmed'
+                ? 'bg-sasie-emerald text-white'
+                : 'bg-white border border-sasie-emerald/30 text-sasie-emerald hover:bg-sasie-emerald/10'
+            }`}
+          >
+            ✓ Konfirm ({rsvpConfirmed})
+          </button>
+          <button
+            onClick={() => setRsvpFilter('pending')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              rsvpFilter === 'pending'
+                ? 'bg-sasie-dove text-white'
+                : 'bg-white border border-sasie-dove/50 text-sasie-milo hover:bg-sasie-dove/20'
+            }`}
+          >
+            … Pending ({rsvpPending})
+          </button>
+          <button
+            onClick={() => setRsvpFilter('declined')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              rsvpFilter === 'declined'
+                ? 'bg-sasie-marun text-white'
+                : 'bg-white border border-sasie-marun/30 text-sasie-marun hover:bg-sasie-marun/10'
+            }`}
+          >
+            ✕ Tidak ({rsvpDeclined})
           </button>
         </div>
 
