@@ -50,11 +50,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           { facingMode: cameraMode },
           {
             fps: 30, // Optimal balance - not too fast to miss, not too slow
-            qrbox: (scanRegionWidth, scanRegionHeight) => {
-              // Use 80% of the smaller dimension for better detection area
-              const size = Math.max(200, Math.min(scanRegionWidth, scanRegionHeight) * 0.8);
-              return { width: size, height: size };
-            },
+            qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
           (decodedText) => {
@@ -235,8 +231,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
       </div>
 
       {/* Scanner */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
-        <div className="relative w-full max-w-xl aspect-square">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-2">
+        <div className="relative w-full max-w-sm aspect-square">
           <div
             className="w-full h-full rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
           >
@@ -254,14 +250,14 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
         </div>
 
         {/* Instructions */}
-        <p className="text-center text-gray-400 font-cremona mt-6 text-sm font-cremona">
+        <p className="text-center text-gray-400 font-cremona mt-3 text-xs font-cremona">
           {isScanning ? 'Arahkan QR Code ke kotak, tunggu sebentar untuk deteksi' : 'Memulai kamera...'}
         </p>
 
         {/* Error Message */}
         {error && (
-          <div className="mt-4 glass-card p-4 border-l-4 border-red-500 animate-slide-up">
-            <p className="text-red-400 font-cremona text-center">{error}</p>
+          <div className="mt-2 glass-card p-3 border-l-4 border-red-500 animate-slide-up">
+            <p className="text-red-400 font-cremona text-center text-sm">{error}</p>
           </div>
         )}
       </div>
