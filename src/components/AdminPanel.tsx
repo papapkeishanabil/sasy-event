@@ -44,6 +44,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [invitationFilter, setInvitationFilter] = useState<'all' | 'not_sent' | 'sent'>('all');
   // RSVP tracking filter
   const [rsvpFilter, setRsvpFilter] = useState<'all' | 'confirmed' | 'declined' | 'pending'>('all');
+  // Filter mode state
+  const [filterMode, setFilterMode] = useState<'invitation' | 'rsvp'>('invitation');
   // Sort state
   const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'category' | 'category_reverse' | 'checkin_time' | 'checkin_time_reverse'>('name_asc');
   // QR Code Modal state
@@ -619,18 +621,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         guest.id.toString().includes(searchQuery);
 
-      // Invitation filter
-      const matchesInvitation = invitationFilter === 'all' ||
-        (invitationFilter === 'sent' && guest.invitationSent) ||
-        (invitationFilter === 'not_sent' && !guest.invitationSent);
-
-      // RSVP filter
-      const matchesRsvp = rsvpFilter === 'all' ||
-        (rsvpFilter === 'confirmed' && guest.rsvpStatus === 'confirmed') ||
-        (rsvpFilter === 'declined' && guest.rsvpStatus === 'declined') ||
-        (rsvpFilter === 'pending' && (!guest.rsvpStatus || guest.rsvpStatus === 'pending'));
-
-      return matchesSearch && matchesInvitation && matchesRsvp;
+      // Only apply the active filter based on filterMode
+      if (filterMode === 'invitation') {
+        // Invitation filter
+        const matchesInvitation = invitationFilter === 'all' ||
+          (invitationFilter === 'sent' && guest.invitationSent) ||
+          (invitationFilter === 'not_sent' && !guest.invitationSent);
+        return matchesSearch && matchesInvitation;
+      } else {
+        // RSVP filter
+        const matchesRsvp = rsvpFilter === 'all' ||
+          (rsvpFilter === 'confirmed' && guest.rsvpStatus === 'confirmed') ||
+          (rsvpFilter === 'declined' && guest.rsvpStatus === 'declined') ||
+          (rsvpFilter === 'pending' && (!guest.rsvpStatus || guest.rsvpStatus === 'pending'));
+        return matchesSearch && matchesRsvp;
+      }
     });
 
     // Apply sorting
@@ -1076,11 +1081,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex gap-1 mb-2">
             <button
               onClick={() => {
-                // Reset RSVP filter when switching to invitation
+                setFilterMode('invitation');
                 setRsvpFilter('all');
               }}
               className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-medium ${
-                rsvpFilter === 'all'
+                filterMode === 'invitation'
                   ? 'bg-sasie-mocca/10 text-sasie-mocca border border-sasie-mocca/30'
                   : 'bg-white text-sasie-milo/60 border border-sasie-dove'
               }`}
@@ -1089,11 +1094,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </button>
             <button
               onClick={() => {
-                // Reset invitation filter when switching to RSVP
+                setFilterMode('rsvp');
                 setInvitationFilter('all');
               }}
               className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-medium ${
-                rsvpFilter !== 'all'
+                filterMode === 'rsvp'
                   ? 'bg-sasie-emerald/10 text-sasie-emerald border border-sasie-emerald/30'
                   : 'bg-white text-sasie-milo/60 border border-sasie-dove'
               }`}
@@ -1105,7 +1110,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           {/* Filter Options */}
           <div className="flex gap-1 overflow-x-auto">
             {/* Invitation filters */}
-            {rsvpFilter === 'all' ? (
+            {filterMode === 'invitation' ? (
               <>
                 <button
                   onClick={() => setInvitationFilter('all')}
