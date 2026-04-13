@@ -96,22 +96,17 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
 
   // Scroll to top
   const scrollToTop = () => {
-    if (guestListRef.current) {
-      guestListRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Track scroll position
+  // Track scroll position using window scroll
   useEffect(() => {
-    const listElement = guestListRef.current;
-    if (!listElement) return;
-
     const handleScroll = () => {
-      setShowScrollTop(listElement.scrollTop > 300);
+      setShowScrollTop(window.scrollY > 400);
     };
 
-    listElement.addEventListener('scroll', handleScroll);
-    return () => listElement.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Statistics
@@ -344,7 +339,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
       </p>
 
       {/* Guest List */}
-      <div ref={guestListRef} className="flex-1 overflow-y-auto px-3 pb-4">
+      <div className="flex-1 overflow-y-auto px-3 pb-4">
         {filteredGuests.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-sasie-milo text-sm">Tidak ada tamu</p>
@@ -422,11 +417,11 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-sasie-gold text-white shadow-lg flex items-center justify-center z-50 animate-fade-in hover:bg-sasie-bronze transition-colors"
+          className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-br from-sasie-gold to-sasie-bronze text-white shadow-xl flex items-center justify-center z-[100] hover:scale-110 transition-all duration-200"
           aria-label="Scroll to top"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7h18" />
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7h18" />
           </svg>
         </button>
       )}
