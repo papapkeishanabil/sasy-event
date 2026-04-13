@@ -787,218 +787,238 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {/* Quick Stats */}
-        <div className="glass-card p-6 mb-6">
-          <h3 className="text-base font-medium text-sasie-mocca mb-4">Current Data</h3>
-          <div className="grid grid-cols-2 gap-4">
+        {/* Quick Stats - Compact */}
+        <div className="glass-card p-3 mb-3">
+          <div className="grid grid-cols-4 gap-2 text-center">
             <div>
-              <p className="text-xl font-bold text-sasie-mocca">{guests.length}</p>
-              <p className="text-sm text-sasie-milo/70">Total Guests</p>
+              <p className="text-lg font-bold text-sasie-mocca">{guests.length}</p>
+              <p className="text-[9px] text-sasie-milo/70">Total</p>
             </div>
             <div>
-              <p className="text-xl font-bold text-sasie-emerald">{stats.checkedIn}</p>
-              <p className="text-sm text-sasie-milo/70">Checked In</p>
+              <p className="text-lg font-bold text-sasie-emerald">{stats.checkedIn}</p>
+              <p className="text-[9px] text-sasie-milo/70">Check-in</p>
             </div>
             <div>
-              <p className="text-xl font-bold text-sasie-gold">{stats.vipTotal}</p>
-              <p className="text-sm text-sasie-milo/70">VIP Guests</p>
+              <p className="text-lg font-bold text-sasie-gold">{stats.vipTotal}</p>
+              <p className="text-[9px] text-sasie-milo/70">VIP</p>
             </div>
             <div>
-              <p className="text-xl font-bold text-sasie-terracotta">{guests.filter(g => g.category === 'Speaker').length}</p>
-              <p className="text-sm text-sasie-milo/70">Speakers</p>
+              <p className="text-lg font-bold text-sasie-terracotta">{guests.filter(g => g.category === 'Speaker').length}</p>
+              <p className="text-[9px] text-sasie-milo/70">Speaker</p>
             </div>
           </div>
         </div>
 
-        {/* Invitation Tracking Stats */}
-        <div className="glass-card p-6 mb-6">
-          <h3 className="text-base font-medium text-sasie-mocca mb-4">Tracking Undangan</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xl font-bold text-sasie-marun">{invitationsNotSent}</p>
-              <p className="text-sm text-sasie-milo/70">Belum Dikirim</p>
+        {/* 1. Undangan - Dari SEMUA tamu */}
+        <div className="glass-card p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">📧</span>
+            <h3 className="text-xs font-bold text-sasie-mocca">Status Undangan</h3>
+            <span className="ml-auto text-[10px] text-sasie-milo/60">{guests.length} tamu</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="text-center p-3 rounded-xl bg-sasie-emerald/10 border border-sasie-emerald/30">
+              <p className="text-2xl font-bold text-sasie-emerald">{invitationsSent}</p>
+              <p className="text-xs text-sasie-emerald/80 font-medium">Sudah Dikirim</p>
+              <p className="text-[9px] text-sasie-emerald/60 mt-1">{guests.length > 0 ? Math.round((invitationsSent / guests.length) * 100) : 0}%</p>
             </div>
-            <div>
-              <p className="text-xl font-bold text-sasie-emerald">{invitationsSent}</p>
-              <p className="text-sm text-sasie-milo/70">Sudah Dikirim</p>
+            <div className="text-center p-3 rounded-xl bg-sasie-marun/10 border border-sasie-marun/30">
+              <p className="text-2xl font-bold text-sasie-marun">{invitationsNotSent}</p>
+              <p className="text-xs text-sasie-marun/80 font-medium">Belum Dikirim</p>
+              <p className="text-[9px] text-sasie-marun/60 mt-1">{guests.length > 0 ? Math.round((invitationsNotSent / guests.length) * 100) : 0}%</p>
             </div>
           </div>
           {invitationsNotSent > 0 && (
-            <div className="mt-4 p-3 rounded-lg bg-sasie-marun/10 border border-sasie-marun/30">
-              <p className="text-sm text-sasie-marun flex items-center gap-2 mb-3">
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {invitationsNotSent} tamu belum menerima undangan
+            <div className="mt-2 p-2 rounded-lg bg-sasie-marun/10 border border-sasie-marun/30">
+              <p className="text-[10px] text-sasie-marun text-center">
+                ⚠️ <span className="font-medium">{invitationsNotSent}</span> undangan belum dikirim
               </p>
-              {stats.checkedIn > 0 && onUpdateGuest && (
-                <button
-                  onClick={async () => {
-                    if (confirm(`Mark ${stats.checkedIn} tamu yang sudah check-in sebagai "Sudah Dikirim"?`)) {
-                      const checkedInGuests = guests.filter(g => g.status === 'checked_in' && !g.invitationSent);
-                      const now = new Date().toISOString();
-                      for (const guest of checkedInGuests) {
-                        await onUpdateGuest(guest.id, { invitationSent: true, invitationSentTime: now });
-                      }
-                      setSuccessMessage(`${checkedInGuests.length} tamu ditandai sebagai "Sudah Dikirim"`);
-                      setTimeout(() => setSuccessMessage(''), 3000);
-                    }
-                  }}
-                  className="w-full mt-2 px-3 py-2 bg-sasie-emerald hover:bg-sasie-emerald/90 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  ✅ Tandai {stats.checkedIn} Tamu Check-In sebagai "Sudah Dikirim"
-                </button>
-              )}
             </div>
           )}
         </div>
 
-        {/* RSVP Tracking Stats */}
-        <div className="glass-card p-6 mb-6">
-          <h3 className="text-base font-medium text-sasie-mocca mb-4">Tracking RSVP</h3>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center">
+        {/* 2. Konfirmasi Kehadiran - Hanya dari undangan TERKIRIM */}
+        <div className="glass-card p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">📋</span>
+            <h3 className="text-xs font-bold text-sasie-mocca">Konfirmasi Kehadiran</h3>
+            <span className="ml-auto text-[10px] text-sasie-milo/60">{invitationsSent} undangan terkirim</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="text-center p-2 rounded-xl bg-sasie-emerald/10 border border-sasie-emerald/30">
               <p className="text-xl font-bold text-sasie-emerald">{rsvpConfirmed}</p>
-              <p className="text-xs text-sasie-milo/70">✓ Konfirm</p>
+              <p className="text-[10px] text-sasie-emerald/80 font-medium">Akan Hadir</p>
+              <p className="text-[8px] text-sasie-emerald/60 mt-0.5">{invitationsSent > 0 ? Math.round((rsvpConfirmed / invitationsSent) * 100) : 0}%</p>
             </div>
-            <div className="text-center">
+            <div className="text-center p-2 rounded-xl bg-sasie-dove/20 border border-sasie-dove/40">
               <p className="text-xl font-bold text-sasie-dove">{rsvpPending}</p>
-              <p className="text-xs text-sasie-milo/70">… Pending</p>
+              <p className="text-[10px] text-sasie-milo/80 font-medium">Belum Respon</p>
+              <p className="text-[8px] text-sasie-milo/60 mt-0.5">{invitationsSent > 0 ? Math.round((rsvpPending / invitationsSent) * 100) : 0}%</p>
             </div>
-            <div className="text-center">
+            <div className="text-center p-2 rounded-xl bg-sasie-marun/10 border border-sasie-marun/30">
               <p className="text-xl font-bold text-sasie-marun">{rsvpDeclined}</p>
-              <p className="text-xs text-sasie-milo/70">✕ Tidak</p>
+              <p className="text-[10px] text-sasie-marun/80 font-medium">Tidak Hadir</p>
+              <p className="text-[8px] text-sasie-marun/60 mt-0.5">{invitationsSent > 0 ? Math.round((rsvpDeclined / invitationsSent) * 100) : 0}%</p>
             </div>
           </div>
           {rsvpPending > 0 && (
-            <div className="mt-4 p-3 rounded-lg bg-sasie-dove/20 border border-sasie-dove/50">
-              <p className="text-sm text-sasie-milo flex items-center gap-2">
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {rsvpPending} tamu belum merespons undangan
+            <div className="mt-2 p-2 rounded-lg bg-sasie-dove/10 border border-sasie-dove/30">
+              <p className="text-[10px] text-sasie-milo text-center">
+                ⏳ <span className="font-medium">{rsvpPending}</span> tamu belum merespons undangan
               </p>
             </div>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        {/* Invitation & RSVP Stats - Visual Progress Design */}
+        <div className="glass-card p-3 mb-3">
+          <div className="space-y-3">
+            {/* Undangan Progress */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg">📧</span>
+                  <span className="text-xs font-medium text-sasie-mocca">Undangan</span>
+                </div>
+                <span className="text-[10px] text-sasie-milo/60">{invitationsSent}/{guests.length} terkirim</span>
+              </div>
+              <div className="flex h-2 rounded-full overflow-hidden bg-sasie-dove/30">
+                <div
+                  className="bg-sasie-emerald transition-all duration-500"
+                  style={{ width: `${guests.length > 0 ? (invitationsSent / guests.length) * 100 : 0}%` }}
+                />
+              </div>
+              {invitationsNotSent > 0 && (
+                <p className="text-[9px] text-sasie-marun mt-1">⚠️ {invitationsNotSent} belum dikirim</p>
+              )}
+            </div>
+
+            {/* RSVP Progress - Only from sent invitations */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg">✅</span>
+                  <span className="text-xs font-medium text-sasie-mocca">RSVP</span>
+                </div>
+                <span className="text-[10px] text-sasie-milo/60">{rsvpConfirmed}/{invitationsSent} konfirm</span>
+              </div>
+              <div className="flex h-2 rounded-full overflow-hidden bg-sasie-dove/30">
+                <div
+                  className="bg-sasie-emerald transition-all duration-500"
+                  style={{ width: `${invitationsSent > 0 ? (rsvpConfirmed / invitationsSent) * 100 : 0}%` }}
+                />
+                <div
+                  className="bg-sasie-dove transition-all duration-500"
+                  style={{ width: `${invitationsSent > 0 ? (rsvpPending / invitationsSent) * 100 : 0}%` }}
+                />
+                <div
+                  className="bg-sasie-marun transition-all duration-500"
+                  style={{ width: `${invitationsSent > 0 ? (rsvpDeclined / invitationsSent) * 100 : 0}%` }}
+                />
+              </div>
+              {rsvpPending > 0 && (
+                <p className="text-[9px] text-sasie-milo mt-1">⏳ {rsvpPending} menunggu respons</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions - Compact */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <button
             onClick={() => setCurrentView('guests')}
-            className="glass-card p-4 text-center hover:border-sasie-gold/50 transition-all"
+            className="glass-card p-3 text-center hover:border-sasie-gold/50 transition-all"
           >
-            <svg className="w-8 h-8 mx-auto mb-2 text-sasie-mocca" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 mx-auto mb-1 text-sasie-mocca" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <p className="font-medium text-sasie-mocca">Kelola Tamu</p>
-            <p className="text-xs text-sasie-milo/70">{guests.length} tamu</p>
+            <p className="text-xs font-medium text-sasie-mocca">Tamu</p>
+            <p className="text-[9px] text-sasie-milo/70">{guests.length}</p>
           </button>
 
           <button
             onClick={() => setCurrentView('categories')}
-            className="glass-card p-4 text-center hover:border-sasie-gold/50 transition-all"
+            className="glass-card p-3 text-center hover:border-sasie-gold/50 transition-all"
           >
-            <svg className="w-8 h-8 mx-auto mb-2 text-sasie-bronze" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 mx-auto mb-1 text-sasie-bronze" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
-            <p className="font-medium text-sasie-mocca">Kategori</p>
-            <p className="text-xs text-sasie-milo/70">{categories.length} kategori</p>
+            <p className="text-xs font-medium text-sasie-mocca">Kategori</p>
+            <p className="text-[9px] text-sasie-milo/70">{categories.length}</p>
           </button>
 
           <button
             onClick={() => setCurrentView('add-guest')}
-            className="glass-card p-4 text-center hover:border-sasie-gold/50 transition-all"
+            className="glass-card p-3 text-center hover:border-sasie-gold/50 transition-all"
           >
-            <svg className="w-8 h-8 mx-auto mb-2 text-sasie-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 mx-auto mb-1 text-sasie-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <p className="font-medium text-sasie-mocca">Tambah Tamu</p>
-            <p className="text-xs text-sasie-milo/70">Tambah baru</p>
+            <p className="text-xs font-medium text-sasie-mocca">Tambah</p>
+            <p className="text-[9px] text-sasie-milo/70">Baru</p>
           </button>
         </div>
 
-        {/* Import Section */}
-        <div className="glass-card p-6 mb-4">
-          <h3 className="text-base font-medium text-sasie-mocca mb-4">Import Guests</h3>
-          <p className="text-sasie-milo/70 text-sm mb-4">
-            Upload a CSV file with columns: Name, Category (VIP/Regular/Media/Speaker), Email, Phone
-          </p>
-          <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-primary w-full flex items-center justify-center gap-2">
-            {uploading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                Upload CSV
-              </>
-            )}
-          </button>
-        </div>
+        {/* Action Buttons - Combined */}
+        <div className="glass-card p-3 mb-4">
+          <h3 className="text-xs font-medium text-sasie-milo/70 mb-2">AKSI</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-sasie-mocca text-white text-xs font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Import CSV
+            </button>
+            <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
 
-        {/* QR Code Section */}
-        <div className="glass-card p-6 mb-4">
-          <h3 className="text-base font-medium text-sasie-mocca mb-4">QR Codes</h3>
-          <div className="space-y-3">
-            <button onClick={handleGeneratePDF} disabled={generating || guests.length === 0} className="btn-secondary w-full flex items-center justify-center gap-2">
-              {generating ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-sasie-mocca border-t-transparent rounded-full animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Download All QR Codes (PDF)
-                </>
-              )}
+            <button
+              onClick={handleGeneratePDF}
+              disabled={generating || guests.length === 0}
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-sasie-mocca/30 text-sasie-mocca text-xs font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              QR Codes
+            </button>
+
+            <button
+              onClick={onInvitationBuilder}
+              className="col-span-2 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Undangan Digital
             </button>
           </div>
         </div>
 
-        {/* Digital Invitation Section */}
-        <div className="glass-card p-6 mb-4 border-2 border-emerald-200">
-          <h3 className="text-base font-medium text-sasie-mocca mb-2">📧 Undangan Digital</h3>
-          <p className="text-sasie-milo/70 text-sm mb-4">Buat undangan digital, kirim via WhatsApp, dan lacak RSVP</p>
-          <button onClick={onInvitationBuilder} className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Invitation Builder
-          </button>
-        </div>
-
-        {/* Data Management */}
-        <div className="glass-card p-6 mb-4">
-          <h3 className="text-base font-medium text-sasie-mocca mb-4">Data Management</h3>
-          <div className="space-y-3">
-            <button onClick={handleExportCSV} className="btn-secondary w-full flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export Data (CSV)
+        {/* Data Management - Compact */}
+        <div className="glass-card p-3 mb-4">
+          <h3 className="text-xs font-medium text-sasie-milo/70 mb-2">DATA</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExportCSV}
+              className="flex-1 py-2 px-3 rounded-lg border border-sasie-milo/30 text-sasie-mocca text-xs"
+            >
+              Export CSV
             </button>
-
-            <button onClick={handleReset} className="w-full py-3 px-4 rounded-xl border border-sasie-terracotta/50 text-sasie-terracotta font-medium hover:bg-sasie-terracotta/10 transition-colors flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Reset All Check-ins
+            <button
+              onClick={handleReset}
+              className="flex-1 py-2 px-3 rounded-lg border border-sasie-terracotta/50 text-sasie-terracotta text-xs"
+            >
+              Reset Check-in
             </button>
-
-            <button onClick={handleClearAll} className="w-full py-3 px-4 rounded-xl border border-sasie-marun/50 text-sasie-marun font-medium hover:bg-sasie-marun/10 transition-colors flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete All Data
+            <button
+              onClick={handleClearAll}
+              className="flex-1 py-2 px-3 rounded-lg border border-sasie-marun/50 text-sasie-marun text-xs"
+            >
+              Delete All
             </button>
           </div>
         </div>
@@ -1050,83 +1070,121 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
         </div>
 
-        {/* Invitation Filter */}
-        <div className="mb-3 flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setInvitationFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              invitationFilter === 'all'
-                ? 'bg-sasie-mocca text-white'
-                : 'bg-white border border-sasie-mocca/30 text-sasie-mocca hover:bg-sasie-mocca/10'
-            }`}
-          >
-            Semua ({guests.length})
-          </button>
-          <button
-            onClick={() => setInvitationFilter('not_sent')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              invitationFilter === 'not_sent'
-                ? 'bg-sasie-marun text-white'
-                : 'bg-white border border-sasie-marun/30 text-sasie-marun hover:bg-sasie-marun/10'
-            }`}
-          >
-            Belum Dikirim ({invitationsNotSent})
-          </button>
-          <button
-            onClick={() => setInvitationFilter('sent')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              invitationFilter === 'sent'
-                ? 'bg-sasie-emerald text-white'
-                : 'bg-white border border-sasie-emerald/30 text-sasie-emerald hover:bg-sasie-emerald/10'
-            }`}
-          >
-            Sudah Dikirim ({invitationsSent})
-          </button>
-        </div>
+        {/* Filters - Tab Style */}
+        <div className="mb-3">
+          {/* Filter Type Toggle */}
+          <div className="flex gap-1 mb-2">
+            <button
+              onClick={() => {
+                // Reset RSVP filter when switching to invitation
+                setRsvpFilter('all');
+              }}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-medium ${
+                rsvpFilter === 'all'
+                  ? 'bg-sasie-mocca/10 text-sasie-mocca border border-sasie-mocca/30'
+                  : 'bg-white text-sasie-milo/60 border border-sasie-dove'
+              }`}
+            >
+              📧 Undangan
+            </button>
+            <button
+              onClick={() => {
+                // Reset invitation filter when switching to RSVP
+                setInvitationFilter('all');
+              }}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-medium ${
+                rsvpFilter !== 'all'
+                  ? 'bg-sasie-emerald/10 text-sasie-emerald border border-sasie-emerald/30'
+                  : 'bg-white text-sasie-milo/60 border border-sasie-dove'
+              }`}
+            >
+              ✅ RSVP
+            </button>
+          </div>
 
-        {/* RSVP Filter */}
-        <div className="mb-4 flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-sasie-milo/70 mr-1">RSVP:</span>
-          <button
-            onClick={() => setRsvpFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              rsvpFilter === 'all'
-                ? 'bg-sasie-milo text-white'
-                : 'bg-white border border-sasie-milo/30 text-sasie-milo hover:bg-sasie-milo/10'
-            }`}
-          >
-            Semua
-          </button>
-          <button
-            onClick={() => setRsvpFilter('confirmed')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              rsvpFilter === 'confirmed'
-                ? 'bg-sasie-emerald text-white'
-                : 'bg-white border border-sasie-emerald/30 text-sasie-emerald hover:bg-sasie-emerald/10'
-            }`}
-          >
-            ✓ Konfirm ({rsvpConfirmed})
-          </button>
-          <button
-            onClick={() => setRsvpFilter('pending')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              rsvpFilter === 'pending'
-                ? 'bg-sasie-dove text-white'
-                : 'bg-white border border-sasie-dove/50 text-sasie-milo hover:bg-sasie-dove/20'
-            }`}
-          >
-            … Pending ({rsvpPending})
-          </button>
-          <button
-            onClick={() => setRsvpFilter('declined')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              rsvpFilter === 'declined'
-                ? 'bg-sasie-marun text-white'
-                : 'bg-white border border-sasie-marun/30 text-sasie-marun hover:bg-sasie-marun/10'
-            }`}
-          >
-            ✕ Tidak ({rsvpDeclined})
-          </button>
+          {/* Filter Options */}
+          <div className="flex gap-1 overflow-x-auto">
+            {/* Invitation filters */}
+            {rsvpFilter === 'all' ? (
+              <>
+                <button
+                  onClick={() => setInvitationFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap ${
+                    invitationFilter === 'all'
+                      ? 'bg-sasie-mocca text-white'
+                      : 'bg-white border border-sasie-mocca/30 text-sasie-mocca'
+                  }`}
+                >
+                  Semua
+                </button>
+                <button
+                  onClick={() => setInvitationFilter('not_sent')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap flex items-center gap-1 ${
+                    invitationFilter === 'not_sent'
+                      ? 'bg-sasie-marun text-white'
+                      : 'bg-white border border-sasie-marun/30 text-sasie-marun'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                  Belum ({invitationsNotSent})
+                </button>
+                <button
+                  onClick={() => setInvitationFilter('sent')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap flex items-center gap-1 ${
+                    invitationFilter === 'sent'
+                      ? 'bg-sasie-emerald text-white'
+                      : 'bg-white border border-sasie-emerald/30 text-sasie-emerald'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                  Terkirim ({invitationsSent})
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setRsvpFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap ${
+                    rsvpFilter === 'all'
+                      ? 'bg-sasie-milo text-white'
+                      : 'bg-white border border-sasie-milo/30 text-sasie-milo'
+                  }`}
+                >
+                  Semua
+                </button>
+                <button
+                  onClick={() => setRsvpFilter('confirmed')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap flex items-center gap-1 ${
+                    rsvpFilter === 'confirmed'
+                      ? 'bg-sasie-emerald text-white'
+                      : 'bg-white border border-sasie-emerald/30 text-sasie-emerald'
+                  }`}
+                >
+                  <span>✓</span> Konfirm ({rsvpConfirmed})
+                </button>
+                <button
+                  onClick={() => setRsvpFilter('pending')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap flex items-center gap-1 ${
+                    rsvpFilter === 'pending'
+                      ? 'bg-sasie-dove text-white'
+                      : 'bg-white border border-sasie-dove/50 text-sasie-milo'
+                  }`}
+                >
+                  <span>…</span> Pending ({rsvpPending})
+                </button>
+                <button
+                  onClick={() => setRsvpFilter('declined')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap flex items-center gap-1 ${
+                    rsvpFilter === 'declined'
+                      ? 'bg-sasie-marun text-white'
+                      : 'bg-white border border-sasie-marun/30 text-sasie-marun'
+                  }`}
+                >
+                  <span>✕</span> Tidak ({rsvpDeclined})
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Sort Buttons */}
