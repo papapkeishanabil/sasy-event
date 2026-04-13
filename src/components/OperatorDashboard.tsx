@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Guest } from '../types';
 
 type FilterType = 'all' | 'checked_in' | 'not_checked_in' | 'rsvp_confirmed' | 'rsvp_pending' | 'rsvp_declined';
@@ -20,6 +20,8 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
   const [sortBy, setSortBy] = useState<SortType>('name_asc');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [filterMode, setFilterMode] = useState<'checkin' | 'rsvp'>('checkin');
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const guestListRef = useRef<HTMLDivElement>(null);
 
   const filteredGuests = useMemo(() => {
     let result = guests;
@@ -91,6 +93,26 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
     }
     setTimeout(() => setMessage(null), 2000);
   };
+
+  // Scroll to top
+  const scrollToTop = () => {
+    if (guestListRef.current) {
+      guestListRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Track scroll position
+  useEffect(() => {
+    const listElement = guestListRef.current;
+    if (!listElement) return;
+
+    const handleScroll = () => {
+      setShowScrollTop(listElement.scrollTop > 300);
+    };
+
+    listElement.addEventListener('scroll', handleScroll);
+    return () => listElement.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Statistics
   const confirmedGuests = guests.filter(g => g.rsvpStatus === 'confirmed');
@@ -322,7 +344,7 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
       </p>
 
       {/* Guest List */}
-      <div className="flex-1 overflow-y-auto px-3 pb-4">
+      <div ref={guestListRef} className="flex-1 overflow-y-auto px-3 pb-4">
         {filteredGuests.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-sasie-milo text-sm">Tidak ada tamu</p>
@@ -395,6 +417,19 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
           </div>
         )}
       </div>
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-sasie-gold text-white shadow-lg flex items-center justify-center z-50 animate-fade-in hover:bg-sasie-bronze transition-colors"
+          aria-label="Scroll to top"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7h18" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };
