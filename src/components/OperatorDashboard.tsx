@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Guest } from '../types';
 
 type FilterType = 'all' | 'checked_in' | 'not_checked_in' | 'rsvp_confirmed' | 'rsvp_pending' | 'rsvp_declined';
@@ -21,7 +21,6 @@ const OperatorDashboard: React.FC<OperatorDashboardProps> = ({ guests, onCheckIn
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [filterMode, setFilterMode] = useState<'checkin' | 'rsvp'>('checkin');
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const guestListRef = useRef<HTMLDivElement>(null);
 
   const filteredGuests = useMemo(() => {
     let result = guests;
