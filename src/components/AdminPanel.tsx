@@ -43,8 +43,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   // Invitation tracking filter
   const [invitationFilter, setInvitationFilter] = useState<'all' | 'not_sent' | 'sent'>('all');
   // Sort state
-  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'category' | 'checkin_time'>('name_asc');
+  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'category' | 'category_reverse' | 'checkin_time' | 'checkin_time_reverse'>('name_asc');
   // QR Code Modal state
+
+  // Custom category order
+  const CATEGORY_ORDER = ['Bestie Deal', 'Designer', 'Guest', 'Reguler', 'VIP'];
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrModalGuest, setQrModalGuest] = useState<Guest | null>(null);
   const [qrModalDataUrl, setQrModalDataUrl] = useState<string | null>(null);
@@ -630,7 +633,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         case 'name_desc':
           return b.name.localeCompare(a.name, 'id-ID');
         case 'category':
-          return a.category.localeCompare(b.category);
+          // Custom category order: Bestie Deal, Designer, Guest, Reguler, VIP
+          const aOrder = CATEGORY_ORDER.indexOf(a.category) ?? 999;
+          const bOrder = CATEGORY_ORDER.indexOf(b.category) ?? 999;
+          return aOrder - bOrder;
+        case 'category_reverse':
+          // Reverse custom category order: VIP, Reguler, Guest, Designer, Bestie Deal
+          const aOrderRev = CATEGORY_ORDER.indexOf(a.category) ?? 999;
+          const bOrderRev = CATEGORY_ORDER.indexOf(b.category) ?? 999;
+          return bOrderRev - aOrderRev;
         case 'checkin_time':
           // Sort by check-in time (checked-in guests first, then by time)
           const aTime = a.checkInTime ? new Date(a.checkInTime).getTime() : 0;
@@ -639,6 +650,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           if (aTime === 0) return 1;
           if (bTime === 0) return -1;
           return bTime - aTime; // Most recent first
+        case 'checkin_time_reverse':
+          // Sort by check-in time (checked-in guests first, oldest first)
+          const aTimeRev = a.checkInTime ? new Date(a.checkInTime).getTime() : 0;
+          const bTimeRev = b.checkInTime ? new Date(b.checkInTime).getTime() : 0;
+          if (aTimeRev === 0 && bTimeRev === 0) return 0;
+          if (aTimeRev === 0) return 1;
+          if (bTimeRev === 0) return -1;
+          return aTimeRev - bTimeRev; // Oldest first
         default:
           return 0;
       }
@@ -1045,24 +1064,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             Z-A
           </button>
           <button
-            onClick={() => setSortBy('category')}
+            onClick={() => setSortBy(sortBy === 'category' ? 'category_reverse' : 'category')}
             className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all duration-200 text-sm ${
-              sortBy === 'category'
+              sortBy === 'category' || sortBy === 'category_reverse'
                 ? 'bg-sasie-mocca text-white shadow-sm'
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
             }`}
           >
-            Kategori
+            Kategori {sortBy === 'category_reverse' ? '▼' : sortBy === 'category' ? '▲' : ''}
           </button>
           <button
-            onClick={() => setSortBy('checkin_time')}
+            onClick={() => setSortBy(sortBy === 'checkin_time' ? 'checkin_time_reverse' : 'checkin_time')}
             className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all duration-200 text-sm ${
-              sortBy === 'checkin_time'
+              sortBy === 'checkin_time' || sortBy === 'checkin_time_reverse'
                 ? 'bg-sasie-mocca text-white shadow-sm'
                 : 'bg-white border border-sasie-dove text-sasie-milo hover:border-sasie-gold/50'
             }`}
           >
-            Waktu Check-in
+            Waktu Check-in {sortBy === 'checkin_time_reverse' ? '↓' : sortBy === 'checkin_time' ? '↑' : ''}
           </button>
         </div>
 

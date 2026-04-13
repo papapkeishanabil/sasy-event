@@ -11,19 +11,36 @@ interface ScanScreenProps {
 const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) => {
   const [error, setError] = useState<string>('');
   const [cameraMode, setCameraMode] = useState<'environment' | 'user'>('user');
+  const [isScanning, setIsScanning] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanRegionId = 'scan-region';
+  const isRunningRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
+    let cleanupObserver: (() => void) | null = null;
 
     const startScanner = async () => {
+      // Prevent multiple simultaneous scans
+      if (isRunningRef.current) {
+        return;
+      }
+      isRunningRef.current = true;
+
       try {
-        // Clear any existing scanner
+        // Clear any existing scanner instance
         if (scannerRef.current) {
           try {
             await scannerRef.current.stop();
-          } catch {}
+          } catch {
+            // Scanner wasn't running, that's fine
+          }
+          try {
+            await scannerRef.current.clear();
+          } catch {
+            // Clear failed, continue anyway
+          }
+          scannerRef.current = null;
         }
 
         const scanner = new Html5Qrcode(scanRegionId);
@@ -32,14 +49,11 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
         await scanner.start(
           { facingMode: cameraMode },
           {
-            fps: 60,
+            fps: 30, // Optimal balance - not too fast to miss, not too slow
             qrbox: (scanRegionWidth, scanRegionHeight) => {
-              // Use 95% of the smaller dimension for maximum scanning range
-              const size = Math.min(scanRegionWidth, scanRegionHeight) * 0.95;
-              return {
-                width: size,
-                height: size
-              };
+              // Use 80% of the smaller dimension for better detection area
+              const size = Math.max(200, Math.min(scanRegionWidth, scanRegionHeight) * 0.8);
+              return { width: size, height: size };
             },
             aspectRatio: 1.0,
           },
@@ -51,12 +65,16 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           }
         );
 
-        // Apply mirror effect for front camera - more aggressive approach
+        if (isMounted) {
+          setIsScanning(true);
+          setError('');
+        }
+
+        // Apply mirror effect for front camera
         const applyMirror = () => {
           const scanRegionEl = document.getElementById(scanRegionId);
           if (!scanRegionEl) return;
 
-          // Find all video elements (including those created by the library)
           const videos = scanRegionEl.querySelectorAll('video');
           videos.forEach(video => {
             if (cameraMode === 'user') {
@@ -66,7 +84,6 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
             }
           });
 
-          // Also find any canvas elements
           const canvases = scanRegionEl.querySelectorAll('canvas');
           canvases.forEach(canvas => {
             if (cameraMode === 'user') {
@@ -77,10 +94,9 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
           });
         };
 
-        // Apply immediately and set up observer for dynamic elements
         applyMirror();
 
-        // Use MutationObserver to watch for video element changes
+        // Set up observer for dynamic elements
         const observer = new MutationObserver(() => {
           applyMirror();
         });
@@ -93,16 +109,17 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
             attributes: true,
             attributeFilter: ['style']
           });
+          cleanupObserver = () => observer.disconnect();
         }
-
-        // Cleanup observer on unmount
-        return () => observer.disconnect();
 
       } catch (err) {
+        console.error('Scanner start error:', err);
         if (isMounted) {
+          setIsScanning(false);
           setError('Unable to access camera. Please check permissions.');
         }
-        console.error(err);
+      } finally {
+        isRunningRef.current = false;
       }
     };
 
@@ -110,10 +127,30 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
 
     return () => {
       isMounted = false;
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(console.error);
-        scannerRef.current = null;
+      if (cleanupObserver) {
+        cleanupObserver();
       }
+
+      // Clean up scanner
+      const cleanupScanner = async () => {
+        if (scannerRef.current) {
+          const scanner = scannerRef.current;
+          scannerRef.current = null;
+          try {
+            await scanner.stop();
+          } catch {
+            // Ignore stop errors
+          }
+          try {
+            await scanner.clear();
+          } catch {
+            // Ignore clear errors
+          }
+        }
+        setIsScanning(false);
+      };
+
+      cleanupScanner();
     };
   }, [cameraMode]);
 
@@ -149,7 +186,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
         setError(`${guest.name} is already checked in`);
         playErrorSound();
       } else {
-        // Success - scanner will stop when component unmounts
+        // Success
         playSuccessSound();
       }
 
@@ -199,7 +236,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
 
       {/* Scanner */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
-        <div className="relative w-full max-w-2xl aspect-[4/3]">
+        <div className="relative w-full max-w-xl aspect-square">
           <div
             className="w-full h-full rounded-3xl overflow-hidden border-2 border-sasie-gold/30 shadow-2xl shadow-sasie-gold/10"
           >
@@ -218,7 +255,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ guests, onCheckIn, onBack }) =>
 
         {/* Instructions */}
         <p className="text-center text-gray-400 font-cremona mt-6 text-sm font-cremona">
-          Position QR code within the frame
+          {isScanning ? 'Arahkan QR Code ke kotak, tunggu sebentar untuk deteksi' : 'Memulai kamera...'}
         </p>
 
         {/* Error Message */}
